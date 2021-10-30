@@ -10,7 +10,7 @@ class User extends CI_Controller {
 
 		$data['results'] = $this->user_model->users();
 
-		$data['page_title'] = "Users";
+		$data['page_title'] = "User Accounts";
 
 		$this->load->view('interface_assets/header', $data);
 		$this->load->view('user/main');
@@ -269,10 +269,10 @@ class User extends CI_Controller {
 				// All okay, return to user screen
 				case OK:
 					if($this->session->userdata('user_id') == $this->input->post('id', true)) {
-						$this->session->set_flashdata('notice', 'User '.$this->input->post('user_name', true).' edited');
-						redirect('user/profile');
+						$this->session->set_flashdata('success', 'User '.$this->input->post('user_name', true).' edited');
+						redirect('user/edit/'.$this->uri->segment(3));
 					} else {
-						$this->session->set_flashdata('notice', 'User '.$this->input->post('user_name', true).' edited');
+						$this->session->set_flashdata('success', 'User '.$this->input->post('user_name', true).' edited');
 						redirect('user');
 					}
 					return;

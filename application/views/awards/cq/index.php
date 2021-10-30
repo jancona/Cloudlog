@@ -84,7 +84,7 @@
 
             <!-- Multiple Checkboxes (inline) -->
             <div class="form-group row">
-                <div class="col-md-2" for="checkboxes">Worked / confirmed</div>
+                <div class="col-md-2" for="checkboxes">Worked / Confirmed</div>
                 <div class="col-md-10">
                     <div class="form-check-inline">
                         <input class="form-check-input" type="checkbox" name="worked" id="worked" value="1" <?php if ($this->input->post('worked') || $this->input->method() !== 'post') echo ' checked="checked"'; ?> >
@@ -134,8 +134,8 @@
             <div class="form-group row">
                 <label class="col-md-2 control-label" for="button1id"></label>
                 <div class="col-md-10">
-                    <button id="button2id" type="reset" name="button2id" class="btn btn-danger">Reset</button>
-                    <button id="button1id" type="submit" name="button1id" class="btn btn-success btn-primary">Show</button>
+                    <button id="button2id" type="reset" name="button2id" class="btn btn-warning">Reset</button>
+                    <button id="button1id" type="submit" name="button1id" class="btn btn-primary">Show</button>
                 </div>
             </div>
 
@@ -168,7 +168,7 @@
         echo '</table>
         <h2>Summary</h2>
 
-        <table class="table-sm table table-bordered table-hover table-striped table-condensed text-center">
+        <table class="table-sm tablesummary table table-bordered table-hover table-striped table-condensed text-center">
         <thead>
         <tr><td></td>';
 

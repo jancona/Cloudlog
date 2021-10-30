@@ -1,14 +1,20 @@
 <div class="container">
-<br>
 	<h3>
 	  Edit Account
 	  <small class="text-muted"><?php echo $user_name; ?></small>
 	</h3>
 
+	<?php if($this->session->flashdata('success')) { ?>
+		<!-- Display Success Message -->
+		<div class="alert alert-success">
+		  <?php echo $this->session->flashdata('success'); ?>
+		</div>
+	<?php } ?>
+
 	<?php if($this->session->flashdata('message')) { ?>
 		<!-- Display Message -->
 		<div class="alert-message error">
-		  <p><?php echo $this->session->flashdata('message'); ?></p>
+		  <?php echo $this->session->flashdata('message'); ?>
 		</div>
 	<?php } ?>
 
@@ -22,8 +28,6 @@
 	<?php $this->load->helper('form'); ?>
 		
 	<form method="post" action="<?php echo site_url('user/edit')."/".$this->uri->segment(3); ?>" name="users" autocomplete="off">
-
-	<br>
 	<div class="row">
 	    <div class="col-md">
 	    	<div class="card">
@@ -47,7 +51,7 @@
 						<label>Password</label>
 						<input class="form-control" type="password" name="user_password" />
 						<?php if(isset($password_error)) { echo "<div class=\"small error\">".$password_error."</div>"; } else { ?>
-						<div class="small">Leave blank to keep existing password</div></td>
+						<div class="small form-text text-muted">Leave blank to keep existing password</div></td>
 						<?php } ?>
 					</div>
 				</div>
@@ -89,11 +93,13 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label>Stylesheet</label>
-
                         <select class="custom-select" id="user_stylesheet" name="user_stylesheet" required>
-                            <option value='bootstrap.min.css' <?php if($user_stylesheet == "bootstrap.min.css") { echo "selected=\"selected\""; } ?>>Standard theme</option>
-                            <option value='bootstrap-dark.css' <?php if($user_stylesheet == "bootstrap-dark.css") { echo "selected=\"selected\""; } ?>>Dark theme</option>
-                            <option value='bootstrap-blue.css' <?php if($user_stylesheet == "bootstrap-blue.css") { echo "selected=\"selected\""; } ?>>Blue theme</option>
+                            <option value='default' <?php if($user_stylesheet == "default") { echo "selected=\"selected\""; } ?>>Default</option>
+                            <option value='blue' <?php if($user_stylesheet == "blue") { echo "selected=\"selected\""; } ?>>Blue</option>
+                            <option value='cosmo' <?php if($user_stylesheet == "cosmo") { echo "selected=\"selected\""; } ?>>Cosmo</option>
+                            <option value='cyborg' <?php if($user_stylesheet == "cyborg") { echo "selected=\"selected\""; } ?>>Cyborg (Dark)</option>
+                            <option value='darkly' <?php if($user_stylesheet == "darkly") { echo "selected=\"selected\""; } ?>> Darkly (Dark)</option>
+                            <option value='superhero' <?php if($user_stylesheet == "superhero") { echo "selected=\"selected\""; } ?>>Superhero (Dark)</option>
                         </select>
                     </div>
                 </div>
@@ -199,7 +205,7 @@
 						<label>Logbook of The World (LoTW) Password</label>
 						<input class="form-control" type="password" name="user_lotw_password" />
 							<?php if(isset($lotwpassword_error)) { echo "<div class=\"small error\">".$lotwpassword_error."</div>"; } else { ?>
-							<div class="small">Leave blank to keep existing password</div></td>
+							<div class="small form-text text-muted">Leave blank to keep existing password</div></td>
 							<?php } ?>
 					</div>
 				</div>
@@ -223,7 +229,7 @@
 						<label>eQSL.cc Password</label>
 						<input class="form-control" type="password" name="user_eqsl_password" />
 							<?php if(isset($eqslpassword_error)) { echo "<div class=\"small error\">".$eqslpassword_error."</div>"; } else { ?>
-							<div class="small">Leave blank to keep existing password</div></td>
+							<div class="small form-text text-muted">Leave blank to keep existing password</div></td>
 							<?php } ?>
 					</div>				
 				</div>
@@ -233,17 +239,17 @@
 
 	<br>
 	<div class="row">
-	 	<!-- Logbook of the World -->
+	 	<!-- Club Log -->
 	    <div class="col-md">
 	    	<div class="card">
 				<div class="card-header">
-			   		Clublog
+			   		Club Log
 				</div>
 				<div class="card-body">
 					<div class="form-group">
 						<label>Club Log Email/Callsign</label>
 						<input class="form-control" type="text" name="user_clublog_name" value="<?php if(isset($user_clublog_name)) { echo $user_clublog_name; } ?>" />
-							<div class="small">This is the Email or Callsign you use to login to Club Log</div></td>
+							<div class="small form-text text-muted">The Email or Callsign you use to login to Club Log</div></td>
 							<?php if(isset($userclublogname_error)) { echo "<div class=\"small error\">".$userclublogname_error."</div>"; } ?>
 
 					</div>
@@ -252,7 +258,7 @@
 						<label>Club Log Password</label>
 						<input class="form-control" type="password" name="user_clublog_password" />
 							<?php if(isset($clublogpassword_error)) { echo "<div class=\"small error\">".$clublogpassword_error."</div>"; } else { ?>
-							<div class="small">Leave blank to keep existing password</div></td>
+							<div class="small form-text text-muted">Leave blank to keep existing password</div></td>
 							<?php } ?>
 					</div>
 				</div>
@@ -262,7 +268,7 @@
 
 	<input type="hidden" name="id" value="<?php echo $this->uri->segment(3); ?>" />
 	<br>
-	<button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Account Changes</button>
+	<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Account Changes</button>
 	<br>
 	<br>
 </form>

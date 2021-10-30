@@ -71,7 +71,7 @@ class Timeplotter_model extends CI_Model
         $this->db->select('time(col_time_on) time, col_call as callsign');
 
         if ($postdata['band'] != 'All') {
-            if ($postdata['band'] == 'sat') {
+            if ($postdata['band'] == 'SAT') {
                 $this->db->where('col_prop_mode', $postdata['band']);
             }
             else {
@@ -143,7 +143,7 @@ class Timeplotter_model extends CI_Model
         }
         else {
             header('Content-Type: application/json');
-            $data['error'] = 'No qsoes to plot found!';
+            $data['error'] = 'No QSOs found to plot!';
             echo json_encode($data);
         }
 

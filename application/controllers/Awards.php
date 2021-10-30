@@ -70,14 +70,15 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - DOK";
         $data['filter'] = str_replace("&#40;and&#41;", ", ", $q);//implode(", ", array_keys($a));
-        //$this->load->view('interface_assets/header', $data);
-        $this->load->view('awards/dok/details_ajax', $data);
-        //$this->load->view('interface_assets/footer');
+        $this->load->view('awards/details', $data);
     }
 	
 	public function dxcc ()	{
 		$this->load->model('dxcc');
+        $this->load->model('modes');
+
         $data['worked_bands'] = $this->dxcc->get_worked_bands(); // Used in the view for band select
+        $data['modes'] = $this->modes->active(); // Used in the view for mode select
 
         if ($this->input->post('band') != NULL) {   // Band is not set when page first loads.
             if ($this->input->post('band') == 'All') {         // Did the user specify a band? If not, use all bands
@@ -108,6 +109,7 @@ class Awards extends CI_Controller {
             $postdata['Oceania'] = $this->input->post('Oceania');
             $postdata['Antarctica'] = $this->input->post('Antarctica');
             $postdata['band'] = $this->input->post('band');
+            $postdata['mode'] = $this->input->post('mode');
         }
         else { // Setting default values at first load of page
             $postdata['lotw'] = 1;
@@ -124,11 +126,12 @@ class Awards extends CI_Controller {
             $postdata['Oceania'] = 1;
             $postdata['Antarctica'] = 1;
             $postdata['band'] = 'All';
+            $postdata['mode'] = 'All';
         }
 
 		$dxcclist = $this->dxcc->fetchdxcc($postdata);
         $data['dxcc_array'] = $this->dxcc->get_dxcc_array($dxcclist, $bands, $postdata);
-        $data['dxcc_summary'] = $this->dxcc->get_dxcc_summary($bands);
+        $data['dxcc_summary'] = $this->dxcc->get_dxcc_summary($data['worked_bands']);
 
 		// Render Page
 		$data['page_title'] = "Awards - DXCC";
@@ -147,7 +150,7 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - DXCC";
         $data['filter'] = "country ".$country. " and ".$band;
-        $this->load->view('awards/dxcc/details_ajax', $data);
+        $this->load->view('awards/details', $data);
     }
 
     public function vucc()	{
@@ -166,10 +169,12 @@ class Awards extends CI_Controller {
     public function vucc_band(){
         $this->load->model('vucc');
         $band = str_replace('"', "", $this->input->get("Band"));
-        $data['vucc_array'] = $this->vucc->vucc_details($band);
+        $type = str_replace('"', "", $this->input->get("Type"));
+        $data['vucc_array'] = $this->vucc->vucc_details($band, $type);
+        $data['type'] = $type;
 
         // Render Page
-        $data['page_title'] = "VUCC - band";
+        $data['page_title'] = "VUCC - " .$band . " Band";
         $data['filter'] = "band ".$band;
         $data['band'] = $band;
         $this->load->view('interface_assets/header', $data);
@@ -187,7 +192,7 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - VUCC";
         $data['filter'] = "vucc " . $gridsquare . " and band ".$band;
-        $this->load->view('awards/vucc/details_ajax', $data);
+        $this->load->view('awards/details', $data);
     }
 
 	/*
@@ -302,7 +307,7 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - DXCC";
         $data['filter'] = "CQZone ".$cqzone. " and ".$band;;
-        $this->load->view('awards/cq/details_ajax', $data);
+        $this->load->view('awards/details', $data);
     }
 
     public function was() {
@@ -344,7 +349,7 @@ class Awards extends CI_Controller {
         $data['was_summary'] = $this->was->get_was_summary($bands);
 
         // Render Page
-        $data['page_title'] = "Awards - WAS (Worked all states)";
+        $data['page_title'] = "Awards - WAS (Worked All States)";
         $this->load->view('interface_assets/header', $data);
         $this->load->view('awards/was/index');
         $this->load->view('interface_assets/footer');
@@ -360,7 +365,7 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - WAS";
         $data['filter'] = "state ".$state. " and ".$band;
-        $this->load->view('awards/was/details_ajax', $data);
+        $this->load->view('awards/details', $data);
     }
 
     public function iota ()	{
@@ -431,6 +436,6 @@ class Awards extends CI_Controller {
         // Render Page
         $data['page_title'] = "Log View - IOTA";
         $data['filter'] = "iota ".$iota. " and ".$band;
-        $this->load->view('awards/iota/details_ajax', $data);
+        $this->load->view('awards/details', $data);
     }
 }
