@@ -13,7 +13,7 @@
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/general.css">
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/default/overrides.css">
 	<?php } ?>
-    
+
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/fontawesome/css/all.css">
 
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/jquery.fancybox.min.css" />
@@ -39,9 +39,10 @@
                                 <a class="nav-item nav-link active" id="nav-qso-tab" data-toggle="tab" href="#nav-qso" role="tab" aria-controls="nav-qso" aria-selected="true">QSO</a>
                                 <a class="nav-item nav-link" id="nav-satellites-tab" data-toggle="tab" href="#nav-satellites" role="tab" aria-controls="nav-awards" aria-selected="true">Sats</a>
                                 <a class="nav-item nav-link" id="nav-awards-tab" data-toggle="tab" href="#nav-awards" role="tab" aria-controls="nav-awards" aria-selected="true">Awards</a>
-                                <a class="nav-item nav-link" id="nav-notes-tab" data-toggle="tab" href="#nav-notes" role="tab" aria-controls="nav-notes" aria-selected="false">Notes</a>
+                                <a class="nav-item nav-link" id="nav-qso-notes-tab" data-toggle="tab" href="#nav-qso-notes" role="tab" aria-controls="nav-qso-notes" aria-selected="false">Notes</a>
                                 <a class="nav-item nav-link" id="nav-qsl-tab" data-toggle="tab" href="#nav-qsl" role="tab" aria-controls="nav-qsl" aria-selected="false">QSL</a>
                                 <a class="nav-item nav-link" id="nav-station-tab" data-toggle="tab" href="#nav-station" role="tab" aria-controls="nav-station" aria-selected="false">Station</a>
+								<a class="nav-item nav-link" id="nav-contest-tab" data-toggle="tab" href="#nav-contest" role="tab" aria-controls="nav-contest" aria-selected="false">Contest</a>
                             </div>
                         </nav>
 
@@ -79,7 +80,7 @@
 
                                     <div class="form-group col-sm-6">
                                     <label for="freq">RX Frequency</label>
-                                    <input type="text" class="form-control" id="freq" name="freq_display_rx" value="<?php if($qso->COL_FREQ_RX != "0") { echo $qso->COL_FREQ_RX; } ?>">
+                                    <input type="text" class="form-control" id="freqrx" name="freq_display_rx" value="<?php if($qso->COL_FREQ_RX != "0") { echo $qso->COL_FREQ_RX; } ?>">
                                     </div>
                                 </div>
 
@@ -191,19 +192,8 @@
                                     </div>
                                 </div>
 
-                                <?php if ($qso->COL_STX_STRING) { ?>
-                                    <div class="form-group">
-                                        <label for="stx_string">TX Serial</label>
-                                        <input type="text" class="form-control" id="band" name="stx_string" value="<?php echo $qso->COL_STX_STRING; ?>">
-                                    </div>
-                                <?php } ?>
 
-                                <?php if ($qso->COL_SRX_STRING) { ?>
-                                    <div class="form-group">
-                                        <label for="srx_string">RX Serial</label>
-                                        <input type="text" class="form-control" id="srx_string" name="srx_string" value="<?php echo $qso->COL_SRX_STRING; ?>">
-                                    </div>
-                                <?php } ?>
+
                                 <div class="form-row">
                                     <div class="form-group col-sm-6">
                                         <label for="locator">Gridsquare</label>
@@ -264,7 +254,7 @@
                                     <div class="form-group col-sm-6">
                                         <label for="dxcc_id">DXCC</label>
                                         <select class="custom-select" id="dxcc_id" name="dxcc_id" required>
-
+                                            <option value="0">None</option>
                                             <?php
                                             foreach($dxcc as $d){
                                                 echo '<option value=' . $d->adif;
@@ -315,7 +305,7 @@
 
                                 <div class="form-group">
                                     <label for="usa_state">USA State</label>
-                                    <select class="custom-select" id="input_usa_state" name="usa_state">
+                                    <select class="custom-select" id="input_usa_state_edit" name="usa_state">
                                         <option value=""></option>
                                         <option value="AL" <?php if($qso->COL_STATE == "AL") { echo "selected=\"selected\""; } ?>>Alabama (AL)</option>
                                         <option value="AK" <?php if($qso->COL_STATE == "AK") { echo "selected=\"selected\""; } ?>>Alaska (AK)</option>
@@ -344,7 +334,7 @@
                                         <option value="MS" <?php if($qso->COL_STATE == "MS") { echo "selected=\"selected\""; } ?>>Mississippi (MS)</option>
                                         <option value="MO" <?php if($qso->COL_STATE == "MO") { echo "selected=\"selected\""; } ?>>Missouri (MO)</option>
                                         <option value="MT" <?php if($qso->COL_STATE == "MT") { echo "selected=\"selected\""; } ?>>Montana (MT)</option>
-                                        <option value="NE" <?php if($qso->COL_STATE == "ME") { echo "selected=\"selected\""; } ?>>Nebraska (NE)</option>
+                                        <option value="NE" <?php if($qso->COL_STATE == "NE") { echo "selected=\"selected\""; } ?>>Nebraska (NE)</option>
                                         <option value="NV" <?php if($qso->COL_STATE == "NV") { echo "selected=\"selected\""; } ?>>Nevada (NV)</option>
                                         <option value="NH" <?php if($qso->COL_STATE == "NH") { echo "selected=\"selected\""; } ?>>New Hampshire (NH)</option>
                                         <option value="NJ" <?php if($qso->COL_STATE == "NJ") { echo "selected=\"selected\""; } ?>>New Jersey (NJ)</option>
@@ -372,6 +362,11 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label for="stationCntyInput">USA County</label>
+                                    <input disabled="disabled" class="form-control" id="stationCntyInputEdit" type="text" name="usa_county" value="<?php echo $qso->COL_CNTY; ?>" />
+                                </div>
+
+                                <div class="form-group">
                                     <label for="iota_ref">IOTA</label>
                                     <select class="custom-select" id="iota_ref" name="iota_ref">
                                         <option value =""></option>
@@ -391,7 +386,7 @@
 
                                 <div class="form-group">
                                     <label for="sota_ref">SOTA</label>
-                                    <input type="text" class="form-control" id="sota_ref" name="sota_ref" value="<?php echo $qso->COL_SOTA_REF; ?>">
+                                    <input type="text" class="form-control" id="sota_ref_edit" name="sota_ref" value="<?php echo $qso->COL_SOTA_REF; ?>">
                                 </div>
 
                                 <div class="form-group">
@@ -406,12 +401,12 @@
 
                                 <div class="form-group">
                                     <label for="darc_dok">DOK</label>
-                                    <input type="text" class="form-control" id="darc_dok" name="darc_dok" value="<?php echo $qso->COL_DARC_DOK; ?>">
+                                    <input type="text" class="form-control" id="darc_dok_edit" name="darc_dok" value="<?php echo $qso->COL_DARC_DOK; ?>">
                                 </div>
                             </div>
 
                             <!-- Notes Panel Contents -->
-                            <div class="tab-pane fade" id="nav-notes" role="tabpanel" aria-labelledby="nav-notes-tab">
+                            <div class="tab-pane fade" id="nav-qso-notes" role="tabpanel" aria-labelledby="nav-qso-notes-tab">
                                 <div class="form-group">
                                     <label for="notes">Notes (for internal usage only)</label>
                                     <textarea  type="text" class="form-control" id="notes" name="notes" rows="10"><?php echo $qso->COL_NOTES; ?></textarea>
@@ -573,8 +568,50 @@
 
 
                             </div>
+							<!-- Contest Panel Contents -->
+							<div class="tab-pane fade" id="nav-contest" role="tabpanel" aria-labelledby="nav-contest-tab">
+								<div class="form-group">
+									<label for="contest_name">Contest Name</label>
+									<select class="custom-select" id="contest_name" name="contest_name">
+										<option value =""></option>
 
-                        </div>
+										<?php
+										foreach($contest as $c) {
+											echo '<option value=' . $c['adifname'];
+											if ($qso->COL_CONTEST_ID == $c['adifname']) {
+												echo " selected=\"selected\"";
+											}
+											echo '>' . $c['name'] . '</option>';
+										}
+										?>
+
+									</select>
+								</div>
+								<div class="form-row">
+									<div class="form-group col-sm-3">
+										<label for="srx">Serial (R)</label>
+										<input type="text" id="srx" class="form-control" name="srx" value="<?php echo $qso->COL_SRX; ?>" />
+									</div>
+
+									<div class="form-group col-sm-3">
+										<label for="stx">Serial (S)</label>
+										<input type="text" id="stx" class="form-control" name="stx" value="<?php echo $qso->COL_STX; ?>" />
+									</div>
+
+									<div class="form-group col-sm-3">
+										<label for="srx_string">Exchange (R)</label>
+										<input type="text" id="srx_string" class="form-control" name="srx_string" value="<?php echo $qso->COL_SRX_STRING; ?>" />
+									</div>
+
+									<div class="form-group col-sm-3">
+										<label for="stx_string">Exchange (S)</label>
+										<input type="text" id="stx_string" class="form-control" name="stx_string" value="<?php echo $qso->COL_STX_STRING; ?>" />
+									</div>
+								</div>
+
+
+
+                        	</div>
 
                         <input type="hidden" name="id" value="<?php echo $qso->COL_PRIMARY_KEY; ?>" />
 
