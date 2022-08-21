@@ -424,8 +424,8 @@ class Lotw extends CI_Controller {
 		// Store Variables
 		$data['issued_callsign'] = $certdata['subject']['undefined'];
 		$data['issued_name'] = $certdata['subject']['commonName'];
-		$data['validFrom'] = $certdata['extensions']['1.3.6.1.4.1.12348.1.2'];
-		$data['validTo_Date'] = $certdata['extensions']['1.3.6.1.4.1.12348.1.3'];
+		$data['validFrom'] = date('Y-m-d H:i:s', $certdata['validFrom_time_t']);;
+		$data['validTo_Date'] = date('Y-m-d H:i:s', $certdata['validTo_time_t']);;
 
 		return $data;
 	}
@@ -905,10 +905,21 @@ class Lotw extends CI_Controller {
 			"TO-108"	=>	"CAS-6",
 			"TAURUS"	=>	"TAURUS-1",
 			"AISAT1"	=>	"AISAT-1",
-			'UVSQ'		=>	"UVSQ-SAT"
+			'UVSQ'		=>	"UVSQ-SAT",
+			'CAS-3H'	=>	"LILACSAT-2",
 		);
 
 		return array_search(strtoupper($satname),$arr,true);
+	}
+
+	function lotw_ca_province_map($ca_prov) {
+		switch ($ca_prov):
+			case "QC":
+				return "PQ";
+				break;
+			default:
+				return $ca_prov;
+		endswitch;
 	}
 
 	/*
@@ -926,8 +937,79 @@ class Lotw extends CI_Controller {
 				if ($submode == "FT4") {
 					return "FT4";
 					break;
+				} elseif ($submode == "FST4") {
+					return "FST4";
+					break;
+				} elseif ($submode == "MFSK16") {
+					return "MFSK16";
+					break;
+				} elseif ($submode == "MFSK8") {
+					return "MFSK8";
+					break;
+				} elseif ($submode == "Q65") {
+					return "Q65";
+					break;
 				} else {
-					return "MFSK";
+					return "DATA";
+					break;
+				}
+			case "PSK":
+				if ($submode == "PSK31") {
+					return "PSK31";
+					break;
+				} elseif ($submode == "PSK63") {
+					return "PSK63";
+					break;
+				} elseif ($submode == "BPSK125") {
+					return "PSK125";
+					break;
+				} elseif ($submode == "BPSK31") {
+					return "PSK31";
+					break;
+				} elseif ($submode == "BPSK63") {
+					return "PSK63";
+					break;
+				} elseif ($submode == "FSK31") {
+					return "FSK31";
+					break;
+				} elseif ($submode == "PSK10") {
+					return "PSK10";
+					break;
+				} elseif ($submode == "PSK125") {
+					return "PSK125";
+					break;
+				} elseif ($submode == "PSK500") {
+					return "PSK500";
+					break;
+				} elseif ($submode == "PSK63F") {
+					return "PSK63F";
+					break;
+				} elseif ($submode == "PSKAM10") {
+					return "PSKAM";
+					break;
+				} elseif ($submode == "PSKAM31") {
+					return "PSKAM";
+					break;
+				} elseif ($submode == "PSKAM50") {
+					return "PSKAM";
+					break;
+				} elseif ($submode == "PSKFEC31") {
+					return "PSKFEC31";
+					break;
+				} elseif ($submode == "QPSK125") {
+					return "PSK125";
+					break;
+				} elseif ($submode == "QPSK31") {
+					return "PSK31";
+					break;
+				} elseif ($submode == "QPSK63") {
+					return "PSK63";
+					break;
+				} elseif ($submode == "PSK2K") {
+					return "PSK2K";
+					break;
+				} else {
+					return "DATA";
 					break;
 				}
 			default:

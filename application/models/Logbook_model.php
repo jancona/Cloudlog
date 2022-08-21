@@ -24,15 +24,15 @@ class Logbook_model extends CI_Model {
 
     // Contest exchange, need to separate between serial and other type of exchange
     if($this->input->post('exchangetype')) {
-		$srx_string = $this->input->post('exch_recv');
-		$stx_string = $this->input->post('exch_sent');
-		$srx = $this->input->post('exch_serial_r');
-		$stx = $this->input->post('exch_serial_s');
+      $srx_string = $this->input->post('exch_recv') == '' ? null : $this->input->post('exch_recv');
+      $stx_string = $this->input->post('exch_sent') == '' ? null : $this->input->post('exch_sent');
+      $srx = $this->input->post('exch_serial_r') == '' ? null : $this->input->post('exch_serial_r');
+      $stx = $this->input->post('exch_serial_s') == '' ? null : $this->input->post('exch_serial_s');
     } else {
-        $srx_string = null;
-        $stx_string = null;
-        $srx = null;
-        $stx = null;
+      $srx_string = null;
+      $stx_string = null;
+      $srx = null;
+      $stx = null;
     }
 
     if($this->input->post('contestname')) {
@@ -104,6 +104,30 @@ class Logbook_model extends CI_Model {
       $dark_dok = $this->input->post('darc_dok');
     }
 
+    if ($this->input->post('qsl_sent')) {
+        $qsl_sent = $this->input->post('qsl_sent');
+    } else {
+        $qsl_sent = 'N';
+    }
+
+    if ($this->input->post('qsl_recv')) {
+        $qsl_recv = $this->input->post('qsl_recv');
+    } else {
+        $qsl_recv = 'N';
+    }
+
+    if ($qsl_sent == 'N') {
+        $qslsdate = null;
+    } else {
+        $qslsdate = date('Y-m-d H:i:s');
+    }
+
+    if ($qsl_recv == 'N') {
+        $qslrdate = null;
+    } else {
+        $qslrdate = date('Y-m-d H:i:s');
+    }
+
     // Create array with QSO Data
     $data = array(
             'COL_TIME_ON' => $datetime,
@@ -121,10 +145,10 @@ class Logbook_model extends CI_Model {
             'COL_SAT_NAME' => strtoupper($this->input->post('sat_name')),
             'COL_SAT_MODE' => strtoupper($this->input->post('sat_mode')),
             'COL_COUNTRY' => $country,
-            'COL_QSLSDATE' => date('Y-m-d'),
-            'COL_QSLRDATE' => date('Y-m-d'),
-            'COL_QSL_SENT' => $this->input->post('qsl_sent'),
-            'COL_QSL_RCVD' => $this->input->post('qsl_recv'),
+            'COL_QSLSDATE' => $qslsdate,
+            'COL_QSLRDATE' => $qslrdate,
+            'COL_QSL_SENT' => $qsl_sent,
+            'COL_QSL_RCVD' => $qsl_recv,
             'COL_QSL_SENT_VIA' => $this->input->post('qsl_sent_method'),
             'COL_QSL_RCVD_VIA' => $this->input->post('qsl_recv_method'),
             'COL_QSL_VIA' => $this->input->post('qsl_via'),
@@ -461,6 +485,8 @@ class Logbook_model extends CI_Model {
 
   /* Edit QSO */
   function edit() {
+    $qso = $this->get_qso($this->input->post('id'))->row();
+
     $entity = $this->get_entity($this->input->post('dxcc_id'));
     $country = $entity['name'];
 
@@ -496,6 +522,34 @@ class Logbook_model extends CI_Model {
 		$uscounty = $this->input->post('usa_state') .",".$this->input->post('usa_county');
 	}
 
+    if ($this->input->post('qsl_sent')) {
+        $qsl_sent = $this->input->post('qsl_sent');
+    } else {
+        $qsl_sent = 'N';
+    }
+
+    if ($this->input->post('qsl_recv')) {
+        $qsl_recv = $this->input->post('qsl_recv');
+    } else {
+        $qsl_recv = 'N';
+    }
+
+    if ($qsl_sent == 'N') {
+        $qslsdate = null;
+    } elseif (!$qso->COL_QSLSDATE || $qso->COL_QSL_SENT != $qsl_sent) {
+        $qslsdate = date('Y-m-d H:i:s');
+    } else {
+        $qslsdate = $qso->COL_QSLSDATE;
+    }
+
+    if ($qsl_recv == 'N') {
+        $qslrdate = null;
+    } elseif (!$qso->COL_QSLRDATE || $qso->COL_QSL_RECV != $qsl_recv) {
+        $qslrdate = date('Y-m-d H:i:s');
+    } else {
+        $qslrdate = $qso->COL_QSLRDATE;
+    }
+
     $data = array(
        'COL_TIME_ON' => $this->input->post('time_on'),
        'COL_TIME_OFF' => $this->input->post('time_off'),
@@ -517,10 +571,10 @@ class Logbook_model extends CI_Model {
        'COL_SAT_NAME' => $this->input->post('sat_name'),
        'COL_SAT_MODE' => $this->input->post('sat_mode'),
        'COL_NOTES' => $this->input->post('notes'),
-       'COL_QSLSDATE' => date('Y-m-d'),
-       'COL_QSLRDATE' => date('Y-m-d'),
-       'COL_QSL_SENT' => $this->input->post('qsl_sent'),
-       'COL_QSL_RCVD' => $this->input->post('qsl_recv'),
+       'COL_QSLSDATE' => $qslsdate,
+       'COL_QSLRDATE' => $qslrdate,
+       'COL_QSL_SENT' => $qsl_sent,
+       'COL_QSL_RCVD' => $qsl_recv,
        'COL_QSL_SENT_VIA' => $this->input->post('qsl_sent_method'),
        'COL_QSL_RCVD_VIA' => $this->input->post('qsl_recv_method'),
        'COL_EQSL_QSL_SENT' => $this->input->post('eqsl_sent'),
@@ -561,7 +615,7 @@ class Logbook_model extends CI_Model {
   function qsl_rcvd() {
 
     $data = array(
-       'COL_QSLRDATE' => date('Y-m-d'),
+       'COL_QSLRDATE' => date('Y-m-d H:i:s'),
        'COL_QSL_RCVD' => "Y"
     );
 
@@ -740,20 +794,35 @@ class Logbook_model extends CI_Model {
 
     return $this->db->get($this->config->item('table_name'));
   }
-
-
-  // Set Paper to recived
+  
+  
+  // Set Paper to received
   function paperqsl_update($qso_id, $method) {
+      
+      $data = array(
+          'COL_QSLRDATE' => date('Y-m-d H:i:s'),
+          'COL_QSL_RCVD' => 'Y',
+          'COL_QSL_RCVD_VIA' => $method
+      );
+      
+      $this->db->where('COL_PRIMARY_KEY', $qso_id);
+      
+      $this->db->update($this->config->item('table_name'), $data);
+  }
 
-    $data = array(
-         'COL_QSLRDATE' => date('Y-m-d'),
-         'COL_QSL_RCVD' => 'Y',
-         'COL_QSL_RCVD_VIA' => $method
-    );
 
-    $this->db->where('COL_PRIMARY_KEY', $qso_id);
-
-    $this->db->update($this->config->item('table_name'), $data);
+  // Set Paper to sent
+  function paperqsl_update_sent($qso_id, $method) {
+      
+      $data = array(
+          'COL_QSLSDATE' => date('Y-m-d H:i:s'),
+          'COL_QSL_SENT' => 'Y',
+          'COL_QSL_SENT_VIA' => $method
+      );
+      
+      $this->db->where('COL_PRIMARY_KEY', $qso_id);
+      
+      $this->db->update($this->config->item('table_name'), $data);
   }
 
 
@@ -761,7 +830,7 @@ class Logbook_model extends CI_Model {
   function paperqsl_requested($qso_id, $method) {
 
     $data = array(
-         'COL_QSLSDATE' => date('Y-m-d'),
+         'COL_QSLSDATE' => date('Y-m-d H:i:s'),
          'COL_QSL_SENT' => 'R'
     );
 
@@ -774,7 +843,7 @@ class Logbook_model extends CI_Model {
   function paperqsl_ignore($qso_id, $method) {
 
     $data = array(
-         'COL_QSLSDATE' => date('Y-m-d'),
+         'COL_QSLSDATE' => date('Y-m-d H:i:s'),
          'COL_QSL_SENT' => 'I'
     );
 
@@ -912,7 +981,7 @@ class Logbook_model extends CI_Model {
     /* Get all QSOs with a valid grid for use in the KML export */
     function kml_get_all_qsos($band, $mode, $dxcc, $cqz, $propagation, $fromdate, $todate) {
         $this->db->select('COL_CALL, COL_BAND, COL_TIME_ON, COL_RST_RCVD, COL_RST_SENT, COL_MODE, COL_SUBMODE, COL_NAME, COL_COUNTRY, COL_PRIMARY_KEY, COL_SAT_NAME, COL_GRIDSQUARE');
-        $this->db->where('COL_GRIDSQUARE != \'null\'');
+        $this->db->where("coalesce(COL_GRIDSQUARE, '') <> ''");
 
         if ($band != 'All') {
             if ($band == 'SAT') {
@@ -1465,8 +1534,12 @@ class Logbook_model extends CI_Model {
       $query = $this->db->get($this->config->item('table_name'));
       $row = $query->row();
 
-      return $row->COL_LOTW_QSLRDATE;
-    }
+      if (isset($row)) {
+        return $row->COL_LOTW_QSLRDATE;
+      }
+
+      return '1900-01-01 00:00:00.000';
+  }
 
 //////////////////////////////
   // Update a QSO with eQSL QSL info
@@ -1474,7 +1547,7 @@ class Logbook_model extends CI_Model {
   // http://www.eqsl.cc/qslcard/ImportADIF.txt
   function eqsl_update($datetime, $callsign, $band, $qsl_status) {
     $data = array(
-         'COL_EQSL_QSLRDATE' => date('Y-m-d'), // eQSL doesn't give us a date, so let's use current
+         'COL_EQSL_QSLRDATE' => date('Y-m-d H:i:s'), // eQSL doesn't give us a date, so let's use current
          'COL_EQSL_QSL_RCVD' => $qsl_status
     );
 
@@ -1491,7 +1564,7 @@ class Logbook_model extends CI_Model {
   // Mark the QSO as sent to eQSL
   function eqsl_mark_sent($primarykey) {
     $data = array(
-         'COL_EQSL_QSLSDATE' => date('Y-m-d'), // eQSL doesn't give us a date, so let's use current
+         'COL_EQSL_QSLSDATE' => date('Y-m-d H:i:s'), // eQSL doesn't give us a date, so let's use current
          'COL_EQSL_QSL_SENT' => 'Y',
     );
 
@@ -1572,9 +1645,19 @@ class Logbook_model extends CI_Model {
         $time_on = date('Y-m-d', strtotime($record['qso_date'])) ." ".date('H:i:s', strtotime($record['time_on']));
 
         if (isset($record['time_off'])) {
-            $time_off = date('Y-m-d', strtotime($record['qso_date'])) ." ".date('H:i:s', strtotime($record['time_off']));
+            if (isset($record['date_off'])) {
+                // date_off and time_off set
+                $time_off = date('Y-m-d', strtotime($record['date_off'])) . ' ' . date('H:i:s', strtotime($record['time_off']));
+            } elseif (strtotime($record['time_off']) < strtotime($record['time_on'])) {
+                // date_off is not set, QSO ends next day
+                $time_off = date('Y-m-d', strtotime($record['qso_date'] . ' + 1 day')) . ' ' . date('H:i:s', strtotime($record['time_off']));
+            } else {
+                // date_off is not set, QSO ends same day
+                $time_off = date('Y-m-d', strtotime($record['qso_date'])) . ' ' . date('H:i:s', strtotime($record['time_off']));
+            }
         } else {
-          $time_off = $time_on;
+            // date_off and time_off not set, QSO end == QSO start
+            $time_off = $time_on;
         }
 
         // Store Freq
@@ -1697,6 +1780,19 @@ class Logbook_model extends CI_Model {
         }else{
             $tx_pwr = NULL;
         }
+
+        // Sanitise RX Power
+        if (isset($record['rx_pwr'])){
+          // Check if RX_PWR is "K" which N1MM+ uses to indicate 1000W
+          if($record['rx_pwr'] == "K") {
+            $rx_pwr = 1000;
+          } else {
+            $rx_pwr = filter_var($record['rx_pwr'],FILTER_VALIDATE_FLOAT);
+          }
+        }else{
+          $rx_pwr = NULL;
+         }
+
 
         if (isset($record['a_index'])){
             $input_a_index = filter_var($record['a_index'],FILTER_SANITIZE_NUMBER_INT);
@@ -2013,7 +2109,7 @@ class Logbook_model extends CI_Model {
                 'COL_RIG_INTL' => (!empty($record['rig_intl'])) ? $record['rig_intl'] : '',
                 'COL_RST_RCVD' => $rst_rx,
                 'COL_RST_SENT' => $rst_tx,
-                'COL_RX_PWR' => (!empty($record['rx_pwr'])) ? $record['rx_pwr'] : null,
+                'COL_RX_PWR' => $rx_pwr,
                 'COL_SAT_MODE' => (!empty($record['sat_mode'])) ? $record['sat_mode'] : '',
                 'COL_SAT_NAME' => (!empty($record['sat_name'])) ? $record['sat_name'] : '',
                 'COL_SFI' => (!empty($record['sfi'])) ? $record['sfi'] : null,
@@ -2149,7 +2245,7 @@ class Logbook_model extends CI_Model {
 
     public function dxcc_lookup($call, $date){
 
-		$dxcc_exceptions = $this->db->select('`entity`, `adif`, `cqz`')
+		$dxcc_exceptions = $this->db->select('*')
 				->where('call', $call)
 				->where('(start <= CURDATE()')
 				->or_where('start is null', NULL, false)
