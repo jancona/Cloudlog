@@ -8,16 +8,27 @@ class QSLPrint extends CI_Controller {
 		$this->load->helper(array('form', 'url'));
 
 		$this->load->model('user_model');
-		if(!$this->user_model->authorize(2)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
+
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 	}
 
 	public function index()
 	{
 		$this->load->model('user_model');
-		if(!$this->user_model->authorize(99)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
 
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 		$this->load->model('stations');
-		$data['station_profile'] = $this->stations->all();
+		$data['station_profile'] = $this->stations->all_of_user();
 
 		$this->load->model('qslprint_model');
 		$data['qsos'] = $this->qslprint_model->get_qsos_for_print();
@@ -125,11 +136,11 @@ class QSLPrint extends CI_Controller {
 		$this->load->model('user_model');
 		if(!$this->user_model->authorize(2)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
 
-			// Update Logbook to Mark Paper Card Received
+			// Update Logbook to Mark Paper Card Sent
 
 			$this->qslprint_model->mark_qsos_printed($station_id);
 
-			$this->session->set_flashdata('notice', 'QSOs are marked as sent via buro');
+			$this->session->set_flashdata('notice', 'QSOs are marked as sent');
 
 			redirect('logbook');
 	}
@@ -163,6 +174,15 @@ class QSLPrint extends CI_Controller {
 		$this->load->model('qslprint_model');
 
 		$this->qslprint_model->add_qso_to_print_queue($this->security->xss_clean($id));
+	}
+
+	public function show_oqrs() {
+		$id = $this->security->xss_clean($this->input->post('id'));
+
+		$this->load->model('qslprint_model');
+
+		$data['result'] = $this->qslprint_model->show_oqrs($id);
+		$this->load->view('oqrs/showoqrs', $data);
 	}
 
 }

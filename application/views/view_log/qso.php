@@ -3,11 +3,17 @@
 
     <ul style="margin-bottom: 10px;" class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="table-tab" data-toggle="tab" href="#qsodetails" role="tab" aria-controls="table" aria-selected="true"><?php echo $this->lang->line('qso_details'); ?></a>
+            <a class="nav-link active" id="table-tab" data-toggle="tab" href="#qsodetails" role="tab" aria-controls="table" aria-selected="true"><?php echo lang('qso_details'); ?></a>
         </li>
         <li class="nav-item">
-            <a id="station-tab" class="nav-link" data-toggle="tab" href="#stationdetails" role="tab" aria-controls="table" aria-selected="true"><?php echo $this->lang->line('cloudlog_station_profile'); ?></a>
+            <a id="station-tab" class="nav-link" data-toggle="tab" href="#stationdetails" role="tab" aria-controls="table" aria-selected="true"><?php echo lang('cloudlog_station_profile'); ?></a>
         </li>
+        <?php
+        if ($row->COL_NOTES != null) {?>
+        <li class="nav-item">
+            <a id="notes-tab" class="nav-link" data-toggle="tab" href="#notesdetails" role="tab" aria-controls="table" aria-selected="true"><?php echo "Notes"; ?></a>
+        </li>
+        <?php }?>
         <?php
         if (($this->config->item('use_auth')) && ($this->session->userdata('user_type') >= 2)) {
 
@@ -16,12 +22,25 @@
                 echo 'hidden ';
             }
                 echo 'class="qslcardtab nav-item">
-                <a class="nav-link" id="qsltab" data-toggle="tab" href="#qslcard" role="tab" aria-controls="home" aria-selected="false">'. $this->lang->line('general_word_qslcard') .'</a>
+                <a class="nav-link" id="qsltab" data-toggle="tab" href="#qslcard" role="tab" aria-controls="home" aria-selected="false">'. lang('general_word_qslcard') .'</a>
                 </li>';
 
             echo '<li class="nav-item">
-            <a class="nav-link" id="qslmanagementtab" data-toggle="tab" href="#qslupload" role="tab" aria-controls="home" aria-selected="false">'. $this->lang->line('general_word_qslcard_management') .'</a>
+            <a class="nav-link" id="qslmanagementtab" data-toggle="tab" href="#qslupload" role="tab" aria-controls="home" aria-selected="false">'. lang('general_word_qslcard_management') .'</a>
             </li>';
+        }
+
+        ?>
+        <?php
+        if (($this->config->item('use_auth')) && ($this->session->userdata('user_type') >= 2)) {
+
+            echo '<li ';
+            if ($row->eqsl_image_file == null) {
+                echo 'hidden ';
+            }
+                echo 'class="eqslcardtab nav-item">
+                <a class="nav-link" id="eqsltab" data-toggle="tab" href="#eqslcard" role="tab" aria-controls="home" aria-selected="false">'. $this->lang->line('general_word_eqslcard') .'</a>
+                </li>';
         }
 
         ?>
@@ -49,7 +68,7 @@
 
                         ?>
 
-                        <td><?php echo $this->lang->line('general_word_datetime'); ?></td>
+                        <td><?php echo lang('general_word_datetime'); ?></td>
                         <?php if(($this->config->item('use_auth') && ($this->session->userdata('user_type') >= 2)) || $this->config->item('use_auth') === FALSE || ($this->config->item('show_time'))) { ?>
                         <td><?php $timestamp = strtotime($row->COL_TIME_ON); echo date($custom_date_format, $timestamp); $timestamp = strtotime($row->COL_TIME_ON); echo " at ".date('H:i', $timestamp); ?></td>
                         <?php } else { ?>
@@ -58,53 +77,53 @@
                     </tr>
 
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_callsign'); ?></td>
-                        <td><b><?php echo str_replace("0","&Oslash;",strtoupper($row->COL_CALL)); ?></b></td>
+                        <td><?php echo lang('gen_hamradio_callsign'); ?></td>
+                        <td><b><?php echo str_replace("0","&Oslash;",strtoupper($row->COL_CALL)); ?></b> <a target="_blank" href="https://www.qrz.com/db/<?php echo strtoupper($row->COL_CALL); ?>"><img width="16" height="16" src="<?php echo base_url(); ?>images/icons/qrz.png" alt="Lookup <?php echo strtoupper($row->COL_CALL); ?> on QRZ.com"></a> <a target="_blank" href="https://www.hamqth.com/<?php echo strtoupper($row->COL_CALL); ?>"><img width="16" height="16" src="<?php echo base_url(); ?>images/icons/hamqth.png" alt="Lookup <?php echo strtoupper($row->COL_CALL); ?> on HamQTH"></a></td>
                     </tr>
 
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_band'); ?></td>
+                        <td><?php echo lang('gen_hamradio_band'); ?></td>
                         <td><?php echo $row->COL_BAND; ?></td>
                     </tr>
 
                     <?php if($this->config->item('display_freq') == true) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_frequency'); ?></td>
+                        <td><?php echo lang('gen_hamradio_frequency'); ?></td>
                         <td><?php echo $this->frequency->hz_to_mhz($row->COL_FREQ); ?></td>
                     </tr>
                     <?php if($row->COL_FREQ_RX != 0) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_frequency_rx'); ?></td>
+                        <td><?php echo lang('gen_hamradio_frequency_rx'); ?></td>
                         <td><?php echo $this->frequency->hz_to_mhz($row->COL_FREQ_RX); ?></td>
                     </tr>
                     <?php }} ?>
 
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_mode'); ?></td>
+                        <td><?php echo lang('gen_hamradio_mode'); ?></td>
                         <td><?php echo $row->COL_SUBMODE==null?$row->COL_MODE:$row->COL_SUBMODE; ?></td>
                     </tr>
 
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_rsts'); ?></td>
+                        <td><?php echo lang('gen_hamradio_rsts'); ?></td>
                         <td><?php echo $row->COL_RST_SENT; ?> <?php if ($row->COL_STX) { ?>(<?php printf("%03d", $row->COL_STX);?>)<?php } ?> <?php if ($row->COL_STX_STRING) { ?>(<?php echo $row->COL_STX_STRING;?>)<?php } ?></td>
                     </tr>
 
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_rstr'); ?></td>
+                        <td><?php echo lang('gen_hamradio_rstr'); ?></td>
                         <td><?php echo $row->COL_RST_RCVD; ?> <?php if ($row->COL_SRX) { ?>(<?php printf("%03d", $row->COL_SRX);?>)<?php } ?> <?php if ($row->COL_SRX_STRING) { ?>(<?php echo $row->COL_SRX_STRING;?>)<?php } ?></td>
                     </tr>
 
                     <?php if($row->COL_GRIDSQUARE != null) { ?>
                     <tr>
                         <td>Gridsquare:</td>
-                        <td><?php echo $row->COL_GRIDSQUARE; ?></td>
+                        <td><?php echo $row->COL_GRIDSQUARE; ?> <a href="javascript:spawnQrbCalculator('<?php echo $row->station_gridsquare . '\',\'' . $row->COL_GRIDSQUARE; ?>')"><i class="fas fa-globe"></i></a></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_GRIDSQUARE != null && strlen($row->COL_GRIDSQUARE) >= 4) { ?>
                     <!-- Total Distance Between the Station Profile Gridsquare and Logged Square -->
                     <tr>
-                        <td><?php echo $this->lang->line('general_total_distance'); //Total distance ?></td>
+                        <td><?php echo lang('general_total_distance'); //Total distance ?></td>
                         <td>
                             <?php
                                 // Load the QRA Library
@@ -112,19 +131,20 @@
                                 $CI->load->library('qra');
 
                                 // Cacluate Distance
-                                echo $CI->qra->distance($row->station_gridsquare, $row->COL_GRIDSQUARE, $measurement_base);
+                                $distance = $CI->qra->distance($row->station_gridsquare, $row->COL_GRIDSQUARE, $measurement_base);
 
                                 switch ($measurement_base) {
                                     case 'M':
-                                        echo "mi";
+                                        $distance .= " mi";
                                         break;
                                     case 'K':
-                                        echo "km";
+                                        $distance .= " km";
                                         break;
                                     case 'N':
-                                        echo "nmi";
+                                        $distance .= " nmi";
                                         break;
                                 }
+                                echo $distance;
                             ?>
                         </td>
                     </tr>
@@ -133,7 +153,7 @@
                     <?php if($row->COL_VUCC_GRIDS != null) { ?>
                     <tr>
                         <td>Gridsquare (Multi):</td>
-                        <td><?php echo $row->COL_VUCC_GRIDS; ?></td>
+                        <td><?php echo $row->COL_VUCC_GRIDS; ?> <a href="javascript:spawnQrbCalculator('<?php echo $row->station_gridsquare . '\',\'' . $row->COL_VUCC_GRIDS; ?>')"><i class="fas fa-globe"></i></a></td>
                     </tr>
                     <?php } ?>
 
@@ -153,7 +173,7 @@
 
                     <?php if($row->COL_NAME != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('general_word_name'); ?></td>
+                        <td><?php echo lang('general_word_name'); ?></td>
                         <td><?php echo $row->COL_NAME; ?></td>
                     </tr>
                     <?php } ?>
@@ -161,7 +181,7 @@
                     <?php if(($this->config->item('use_auth') && ($this->session->userdata('user_type') >= 2)) || $this->config->item('use_auth') === FALSE) { ?>
                     <?php if($row->COL_COMMENT != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('general_word_comment'); ?></td>
+                        <td><?php echo lang('general_word_comment'); ?></td>
                         <td><?php echo $row->COL_COMMENT; ?></td>
                     </tr>
                     <?php } ?>
@@ -169,93 +189,182 @@
 
                     <?php if($row->COL_SAT_NAME != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_satellite_name'); ?></td>
-                        <td><?php echo $row->COL_SAT_NAME; ?></td>
+                        <td><?php echo lang('gen_hamradio_satellite_name'); ?></td>
+                        <td><a href="https://db.satnogs.org/search/?q=<?php echo $row->COL_SAT_NAME; ?>" target="_blank"><?php echo $row->COL_SAT_NAME; ?></a></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_SAT_MODE != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_satellite_mode'); ?></td>
+                        <td><?php echo lang('gen_hamradio_satellite_mode'); ?></td>
                         <td><?php echo $row->COL_SAT_MODE; ?></td>
                     </tr>
                     <?php } ?>
-                    <?php if($row->COL_COUNTRY != null) { ?>
+                    <?php if($row->name != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('general_word_country'); ?></td>
-                        <td><?php echo ucwords(strtolower(($row->COL_COUNTRY))); ?></td>
+                        <td><?php echo lang('general_word_country'); ?></td>
+                        <td><?php echo ucwords(strtolower(($row->name)), "- (/"); if ($row->end != null) { echo ' <span class="badge badge-danger">'.lang('gen_hamradio_deleted_dxcc').'</span>'; } ?></td>
+                    </tr>
+                    <?php } ?>
+
+                    <?php if($row->COL_CONT != null) { ?>
+                    <tr>
+                        <td><?php echo lang('gen_hamradio_continent'); ?></td>
+                        <td>
+                        <?php
+                           switch($row->COL_CONT) {
+                             case "AF":
+                               echo lang('africa');
+                               break;
+                             case "AN":
+                               echo lang('antarctica');
+                               break;
+                             case "AS":
+                               echo lang('asia');
+                               break;
+                             case "EU":
+                               echo lang('europe');
+                               break;
+                             case "NA":
+                               echo lang('northamerica');
+                               break;
+                             case "OC":
+                               echo lang('oceania');
+                               break;
+                             case "SA":
+                               echo lang('southamerica');
+                               break;
+                           }
+                        ?>
+                        </td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_CONTEST_ID != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('contesting_contest_name'); ?></td>
+                        <td><?php echo lang('contesting_contest_name'); ?></td>
                         <td><?php echo $row->COL_CONTEST_ID; ?></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_IOTA != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_iota_reference'); ?></td>
-                        <td><?php echo $row->COL_IOTA; ?></td>
+                        <td><?php echo lang('gen_hamradio_iota_reference'); ?></td>
+                        <td><a href="https://www.iota-world.org/iotamaps/?grpref=<?php echo $row->COL_IOTA; ?>" target="_blank"><?php echo $row->COL_IOTA; ?></a></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_SOTA_REF != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_sota_reference'); ?></td>
-                        <td><?php echo $row->COL_SOTA_REF; ?></td>
+                        <td><?php echo lang('gen_hamradio_sota_reference'); ?></td>
+                        <td><a href="https://summits.sota.org.uk/summit/<?php echo $row->COL_SOTA_REF; ?>" target="_blank"><?php echo $row->COL_SOTA_REF; ?></a></td>
+                    </tr>
+                    <?php } ?>
+
+                    <?php if($row->COL_WWFF_REF != null) { ?>
+                    <tr>
+                        <td><?php echo lang('gen_hamradio_wwff_reference'); ?></td>
+                        <td><a href="https://www.cqgma.org/zinfo.php?ref=<?php echo $row->COL_WWFF_REF; ?>" target="_blank"><?php echo $row->COL_WWFF_REF; ?></a></td>
+                    </tr>
+                    <?php } ?>
+
+                    <?php if($row->COL_POTA_REF != null) { ?>
+                    <tr>
+                        <td><?php echo lang('gen_hamradio_pota_reference'); ?></td>
+                        <td><a href="https://pota.app/#/park/<?php echo $row->COL_POTA_REF; ?>" target="_blank"><?php echo $row->COL_POTA_REF; ?></a></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_SIG != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_sig'); ?></td>
+                        <td><?php echo lang('gen_hamradio_sig'); ?></td>
                         <td><?php echo $row->COL_SIG; ?></td>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_SIG_INFO != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_sig_info'); ?></td>
-                        <td><?php echo $row->COL_SIG_INFO; ?></td>
+                        <td><?php echo lang('gen_hamradio_sig_info'); ?></td>
+                        <?php
+                        switch ($row->COL_SIG) {
+                        case "GMA":
+                           echo "<td><a href=\"https://www.cqgma.org/zinfo.php?ref=".$row->COL_SIG_INFO."\" target=\"_blank\">".$row->COL_SIG_INFO."</a></td>";
+                           break;
+                        case "MQC":
+                           echo "<td><a href=\"https://www.mountainqrp.it/awards/referenza.php?ref=".$row->COL_SIG_INFO."\" target=\"_blank\">".$row->COL_SIG_INFO."</a></td>";
+                           break;
+                        default:
+                           echo "<td>".$row->COL_SIG_INFO."</td>";
+                           break;
+                        }
+                        ?>
                     </tr>
                     <?php } ?>
 
                     <?php if($row->COL_DARC_DOK != null) { ?>
                     <tr>
-                        <td><?php echo $this->lang->line('gen_hamradio_dok'); ?></td>
-                        <td><a href="https://www.darc.de/<?php echo $row->COL_DARC_DOK; ?>" target="_new"><?php echo $row->COL_DARC_DOK; ?></a></td>
+                        <td><?php echo lang('gen_hamradio_dok'); ?></td>
+                        <?php if (preg_match('/^[A-Y]\d{2}$/', $row->COL_DARC_DOK)) { ?>
+                        <td><a href="https://www.darc.de/<?php echo $row->COL_DARC_DOK; ?>" target="_blank"><?php echo $row->COL_DARC_DOK; ?></a></td>
+                        <?php } else if (preg_match('/^Z\d{2}$/', $row->COL_DARC_DOK)) { ?>
+                        <td><a href="https://<?php echo $row->COL_DARC_DOK; ?>.vfdb.org" target="_blank"><?php echo $row->COL_DARC_DOK; ?></a></td>
+                        <?php } else { ?>
+                        <td><?php echo $row->COL_DARC_DOK; ?></td>
+                        <?php } ?>
                     </tr>
                     <?php } ?>
 
                 </table>
                 <?php if($row->COL_QSL_SENT == "Y" || $row->COL_QSL_RCVD == "Y") { ?>
-                    <h3><?php echo $this->lang->line('qslcard_info'); ?></h3>
+                    <h3><?php echo lang('qslcard_info'); ?></h3>
 
-                    <?php if($row->COL_QSL_SENT == "Y" && $row->COL_QSL_SENT_VIA == "B") { ?>
-                    <p><?php echo $this->lang->line('qslcard_sent_bureau'); ?></p>
-                    <?php } ?>
-                    <?php if($row->COL_QSL_SENT == "Y" && $row->COL_QSL_SENT_VIA == "D") { ?>
-                    <p><?php echo $this->lang->line('qslcard_sent_direct'); ?></p>
+                    <?php if($row->COL_QSL_SENT == "Y") {?>
+                        <?php if ($row->COL_QSL_SENT_VIA == "B") { ?>
+                            <p><?php echo lang('qslcard_sent_bureau'); ?>
+                        <?php } else if($row->COL_QSL_SENT_VIA == "D") { ?>
+                            <p><?php echo lang('qslcard_sent_direct'); ?>
+                        <?php } else if($row->COL_QSL_SENT_VIA == "E") { ?>
+                            <p><?php echo lang('qslcard_sent_electronic'); ?>
+                        <?php } else if($row->COL_QSL_SENT_VIA == "M") { ?>
+                            <p><?php echo lang('qslcard_sent_manager'); ?>
+                        <?php } else { ?>
+                            <p><?php echo lang('qslcard_sent'); ?>
+                        <?php } ?>
+                        <?php if ($row->COL_QSLSDATE != null) { ?>
+                            <?php $timestamp = strtotime($row->COL_QSLSDATE); echo " (".date($custom_date_format, $timestamp).")"; ?></p>
+                        <?php } ?>
                     <?php } ?>
 
-                    <?php if($row->COL_QSL_RCVD == "Y" && $row->COL_QSL_RCVD_VIA == "B") { ?>
-                    <p><?php echo $this->lang->line('qslcard_recvd_bureau'); ?></p>
+                    <?php if($row->COL_QSL_RCVD == "Y") { ?>
+                        <?php if ($row->COL_QSL_RCVD_VIA == "B") { ?>
+                            <p><?php echo lang('qslcard_rcvd_bureau'); ?>
+                        <?php } else if($row->COL_QSL_RCVD_VIA == "D") { ?>
+                            <p><?php echo lang('qslcard_rcvd_direct'); ?>
+                        <?php } else if($row->COL_QSL_RCVD_VIA == "E") { ?>
+                            <p><?php echo lang('qslcard_rcvd_electronic'); ?>
+                        <?php } else if($row->COL_QSL_RCVD_VIA == "M") { ?>
+                            <p><?php echo lang('qslcard_rcvd_manager'); ?>
+                        <?php } else { ?>
+                            <p><?php echo lang('qslcard_rcvd'); ?>
+                        <?php } ?>
+                        <?php if ($row->COL_QSLRDATE != null) { ?>
+                            <?php $timestamp = strtotime($row->COL_QSLRDATE); echo " (".date($custom_date_format, $timestamp).")"; ?></p>
+                        <?php } ?>
                     <?php } ?>
-                    <?php if($row->COL_QSL_RCVD == "Y" && $row->COL_QSL_RCVD_VIA == "D") { ?>
-                    <p><?php echo $this->lang->line('qslcard_recvd_direct'); ?></p>
-                    <?php } ?>
+
                 <?php } ?>
+                    <?php if($row->lotwuser != null) { ?>
+                    <br /><p><?php echo lang('lotw_user'); ?> <?php $timestamp = strtotime($row->lastupload); echo date($custom_date_format, $timestamp); $timestamp = strtotime($row->lastupload); echo " at ".date('H:i', $timestamp);?> UTC.</p>
+                    <?php } ?>
 
                     <?php if($row->COL_LOTW_QSL_RCVD == "Y") { ?>
-                    <h3><?php echo $this->lang->line('lotw_short'); ?></h3>
-                    <p><?php echo $this->lang->line('gen_this_qso_was_confirmed_on'); ?> <?php $timestamp = strtotime($row->COL_LOTW_QSLRDATE); echo date($custom_date_format, $timestamp); ?>.</p>
+                    <h3><?php echo lang('lotw_short'); ?></h3>
+                    <p><?php echo lang('gen_this_qso_was_confirmed_on'); ?> <?php $timestamp = strtotime($row->COL_LOTW_QSLRDATE); echo date($custom_date_format, $timestamp); ?>.</p>
                     <?php } ?>
 
                     <?php if($row->COL_EQSL_QSL_RCVD == "Y") { ?>
                     <h3>eQSL</h3>
-                        <p><?php echo $this->lang->line('gen_this_qso_was_confirmed_on'); ?> <?php $timestamp = strtotime($row->COL_EQSL_QSLRDATE); echo date($custom_date_format, $timestamp); ?>.</p>
+                        <p><?php echo lang('gen_this_qso_was_confirmed_on'); ?> <?php $timestamp = strtotime($row->COL_EQSL_QSLRDATE); echo date($custom_date_format, $timestamp); ?>.</p>
                     <?php } ?>
             </div>
 
@@ -265,7 +374,8 @@
 
                     <?php if(($this->config->item('use_auth') && ($this->session->userdata('user_type') >= 2)) || $this->config->item('use_auth') === FALSE) { ?>
                         <br>
-                            <p class="editButton"><a class="btn btn-primary" href="<?php echo site_url('qso/edit'); ?>/<?php echo $row->COL_PRIMARY_KEY; ?>" href="javascript:;"><i class="fas fa-edit"></i><?php echo $this->lang->line('qso_btn_edit_qso'); ?></a></p>
+                            <div style="display: inline-block;"><p class="editButton"><a class="btn btn-primary" href="<?php echo site_url('qso/edit'); ?>/<?php echo $row->COL_PRIMARY_KEY; ?>" href="javascript:;"><i class="fas fa-edit"></i><?php echo lang('qso_btn_edit_qso'); ?></a></p></div>
+                            <div style="display: inline-block;"><form method="POST" action="<?php echo site_url('search'); ?>"><input type="hidden" value="<?php echo strtoupper($row->COL_CALL); ?>" name="callsign"><button class="btn btn-primary" type="submit"><i class="fas fa-eye"></i> More QSOs</button></form></div>
                     <?php } ?>
 
                     <?php
@@ -277,11 +387,26 @@
                             $twitter_band_sat = $row->COL_BAND;
                             $hashtags = "#hamr #cloudlog";
                         }
-
-                        $twitter_string = urlencode("Just worked ".$row->COL_CALL." in ".ucwords(strtolower(($row->COL_COUNTRY)))." (Gridsquare: ".$row->COL_GRIDSQUARE.") on ".$twitter_band_sat." using ".$row->COL_MODE." ".$hashtags);
+                        if($row->COL_IOTA != null) {
+                            $hashtags .= " #IOTA ".$row->COL_IOTA;
+                        }
+                        if($row->COL_SOTA_REF != null) {
+                            $hashtags .= " #SOTA ".$row->COL_SOTA_REF;
+                        }
+                        if($row->COL_POTA_REF != null) {
+                            $hashtags .= " #POTA ".$row->COL_POTA_REF;
+                        }
+                        if($row->COL_WWFF_REF != null) {
+                            $hashtags .= " #WWFF ".$row->COL_WWFF_REF;
+                        }
+                        if (!isset($distance)) {
+                            $twitter_string = urlencode("Just worked ".$row->COL_CALL." in ".ucwords(strtolower(($row->COL_COUNTRY)))." on ".$twitter_band_sat." using ".($row->COL_SUBMODE==null?$row->COL_MODE:$row->COL_SUBMODE)." ".$hashtags);
+                        } else {
+                            $twitter_string = urlencode("Just worked ".$row->COL_CALL." in ".ucwords(strtolower(($row->COL_COUNTRY)))." (Gridsquare: ".$row->COL_GRIDSQUARE." / distance: ".$distance.") on ".$twitter_band_sat." using ".($row->COL_SUBMODE==null?$row->COL_MODE:$row->COL_SUBMODE)." ".$hashtags);
+                        }
                     ?>
 
-                    <div class="text-right"><a class="btn btn-sm btn-primary twitter-share-button" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo $twitter_string; ?>"><i class="fab fa-twitter"></i> Tweet</a></div>
+                    <div style="display: inline-block;"><a class="btn btn-primary twitter-share-button" target="_blank" href="https://twitter.com/intent/tweet?text=<?php echo $twitter_string; ?>"><i class="fab fa-twitter"></i> Tweet</a></div>
 
                 </div>
             </div>
@@ -294,6 +419,10 @@
                     <tr>
                         <td>Station Callsign</td>
                         <td><?php echo $row->station_callsign; ?></td>
+                    </tr>
+                    <tr>
+                        <td>Station Name</td>
+                        <td><?php echo $row->station_profile_name; ?></td>
                     </tr>
                     <tr>
                         <td>Station Gridsquare</td>
@@ -310,7 +439,7 @@
                     <?php if($row->station_country) { ?>
                     <tr>
                         <td>Station Country</td>
-                        <td><?php echo ucwords(strtolower(($row->station_country))); ?></td>
+                        <td><?php echo ucwords(strtolower(($row->station_country)), "- (/"); if ($row->station_end != null) echo ' <span class="badge badge-danger">'.lang('gen_hamradio_deleted_dxcc').'</span>'; ?></td>
                     </tr>
                     <?php } ?>
 
@@ -327,7 +456,26 @@
                         <td><?php echo $row->COL_TX_PWR; ?>w</td>
                     </tr>
                     <?php } ?>
+
+                    <?php if($row->COL_MY_WWFF_REF) { ?>
+                    <tr>
+                        <td>Station WWFF Reference</td>
+                        <td><?php echo $row->COL_MY_WWFF_REF; ?></td>
+                    </tr>
+                    <?php } ?>
+
+                    <?php if($row->COL_MY_POTA_REF) { ?>
+                    <tr>
+                        <td>Station POTA Reference</td>
+                        <td><?php echo $row->COL_MY_POTA_REF; ?></td>
+                    </tr>
+                    <?php } ?>
             </table>
+        </div>
+
+        <div class="tab-pane fade" id="notesdetails" role="tabpanel" aria-labelledby="table-tab">
+            <h3>Notes</h3>
+            <?php echo nl2br($row->COL_NOTES); ?>
         </div>
 
         <?php
@@ -363,18 +511,18 @@
                 <fieldset>
 
                     <div class="form-group">
-                        <label for="qslcardfront"><?php echo $this->lang->line('qslcard_upload_front'); ?></label>
+                        <label for="qslcardfront"><?php echo lang('qslcard_upload_front'); ?></label>
                         <input class="form-control-file" type="file" id="qslcardfront" name="qslcardfront" accept="image/*" >
                     </div>
 
                     <div class="form-group">
-                        <label for="qslcardback"><?php echo $this->lang->line('qslcard_upload_back'); ?></label>
+                        <label for="qslcardback"><?php echo lang('qslcard_upload_back'); ?></label>
                         <input class="form-control-file" type="file" id="qslcardback" name="qslcardback" accept="image/*">
                     </div>
 
                     <input type="hidden" class="form-control" id="qsoinputid" name="qsoid" value="<?php echo $row->COL_PRIMARY_KEY; ?>">
 
-                    <button type="button" onclick="uploadQsl();" id="button1id"  name="button1id" class="btn btn-primary"><?php echo $this->lang->line('qslcard_upload_button'); ?></button>
+                    <button type="button" onclick="uploadQsl();" id="button1id"  name="button1id" class="btn btn-primary"><?php echo lang('qslcard_upload_button'); ?></button>
 
                 </fieldset>
             </form>
@@ -400,13 +548,13 @@
                     <?php
                     $i = 1;
                     foreach ($qslimages as $image) {
-                        echo '<div class="carousel-item carouselimageid_' . $image->id;
+                        echo '<center><div class="carousel-item carouselimageid_' . $image->id;
                         if ($i == 1) {
                             echo ' active';
                         }
                         echo '">';
-                        echo '<img class="d-block w-100" src="' . base_url() . '/assets/qslcard/' . $image->filename .'" alt="QSL picture #'. $i++.'">';
-                        echo '</div>';
+                        echo '<img class="img-fluid w-qsl" src="' . base_url() . '/assets/qslcard/' . $image->filename .'" alt="QSL picture #'. $i++.'">';
+                        echo '</div></center>';
                     }
                     ?>
                 </div>
@@ -421,6 +569,11 @@
             </div>
         </div>
 
+        <div class="tab-pane fade" id="eqslcard" role="tabpanel" aria-labelledby="table-tab">
+        <?php
+           echo '<img class="d-block" src="' . base_url() . '/images/eqsl_card_images/' . $row->eqsl_image_file .'" alt="QSL picture #'. $i++.'">';
+        ?>
+        </div>
         <?php
         }
         ?>
@@ -434,21 +587,48 @@
 		    $lat = $stn_loc[0];
 		    $lng = $stn_loc[1];
         }
+    } elseif($row->COL_VUCC_GRIDS != null) {
+        $grids = explode(",", $row->COL_VUCC_GRIDS);
+        if (count($grids) == 2) {
+            $grid1 = $this->qra->qra2latlong(trim($grids[0]));
+            $grid2 = $this->qra->qra2latlong(trim($grids[1]));
+
+            $coords[]=array('lat' => $grid1[0],'lng'=> $grid1[1]);
+            $coords[]=array('lat' => $grid2[0],'lng'=> $grid2[1]);    
+
+            $midpoint = $this->qra->get_midpoint($coords);
+            $lat = $midpoint[0];
+		    $lng = $midpoint[1];
+        }
+        if (count($grids) == 4) {
+            $grid1 = $this->qra->qra2latlong(trim($grids[0]));
+            $grid2 = $this->qra->qra2latlong(trim($grids[1]));
+            $grid3 = $this->qra->qra2latlong(trim($grids[2]));
+            $grid4 = $this->qra->qra2latlong(trim($grids[3]));
+
+            $coords[]=array('lat' => $grid1[0],'lng'=> $grid1[1]);
+            $coords[]=array('lat' => $grid2[0],'lng'=> $grid2[1]);    
+            $coords[]=array('lat' => $grid3[0],'lng'=> $grid3[1]);    
+            $coords[]=array('lat' => $grid4[0],'lng'=> $grid4[1]);    
+
+            $midpoint = $this->qra->get_midpoint($coords);
+            $lat = $midpoint[0];
+		    $lng = $midpoint[1];
+        }
 	} else {
+        if(isset($row->lat)) {
+			$lat = $row->lat;
+        } else {
+            $lat = 0;
+        }
 
-		$CI =& get_instance();
-		$CI->load->model('Logbook_model');
-
-		$result = $CI->Logbook_model->dxcc_lookup($row->COL_CALL, $row->COL_TIME_ON);
-
-        if(isset($result)) {
-			$lat = $result['lat'];
-			$lng = $result['long'];
+        if(isset($row->long)) {
+			$lng = $row->long;
+        } else {
+            $lng = 0;
         }
 	}
 ?>
-
-
 
 <script>
 var lat = <?php echo $lat; ?>;

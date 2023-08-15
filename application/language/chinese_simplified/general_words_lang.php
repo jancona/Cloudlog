@@ -38,16 +38,24 @@ $lang['general_word_method'] = '方法';
 $lang['general_word_sent'] = '已发送';
 $lang['general_word_received'] = '已收到';
 $lang['general_word_requested'] = '已请求';
+$lang['general_word_queued'] = '已排队';
+$lang['general_word_invalid_ignore'] = '无效(忽略)';
 $lang['general_word_qslcard'] = 'QSL 卡片';
 $lang['general_word_qslcard_management'] = 'QSL 管理';
 $lang['general_word_qslcards'] = 'QSL 卡片';
 $lang['general_word_qslcard_direct'] = '直邮';
 $lang['general_word_qslcard_bureau'] = '卡片局';
+$lang['general_word_qslcard_electronic'] = '电子';
+$lang['general_word_qslcard_manager'] = '管理员';
 $lang['general_word_qslcard_via'] = '通过';
+$lang['general_word_eqslcards'] = 'eQSL 卡片';
+$lang['general_word_lotw'] = 'Logbook of the World';
 
 $lang['general_edit_qso'] = '编辑 QSO';
 $lang['general_mark_qsl_rx_bureau'] = '标记 已收到的QSL (卡片局)';
 $lang['general_mark_qsl_rx_direct'] = '标记 已收到的QSL (直邮)';
+$lang['general_mark_qsl_tx_bureau'] = '标记 已发送的QSL (卡片局)';
+$lang['general_mark_qsl_tx_direct'] = '标记 已发送的QSL (直邮)';
 
 $lang['general_delete_qso'] = '删除 QSO';
 
@@ -64,7 +72,7 @@ $lang['gen_hamradio_call'] = '呼号';
 $lang['gen_hamradio_callsign'] = '呼号';
 $lang['gen_hamradio_mode'] = '模式';
 $lang['gen_hamradio_rst_sent'] = '发';
-$lang['gen_hamradio_rst_recv'] = '收';
+$lang['gen_hamradio_rst_rcvd'] = '收';
 $lang['gen_hamradio_band'] = '频段';
 $lang['gen_hamradio_band_rx'] = '频段 (RX)';
 $lang['gen_hamradio_frequency'] = '频率';
@@ -73,7 +81,7 @@ $lang['gen_hamradio_radio'] = '电台';
 $lang['gen_hamradio_rsts'] = '信号报告 (发)';
 $lang['gen_hamradio_rstr'] = '信号报告 (收)';
 $lang['gen_hamradio_exchange_sent_short'] = '信号交换 (发)';
-$lang['gen_hamradio_exchange_recv_short'] = '信号交换 (收)';
+$lang['gen_hamradio_exchange_rcvd_short'] = '信号交换 (收)';
 $lang['gen_hamradio_qsl'] = 'QSL';
 $lang['gen_hamradio_locator'] = '定位器';
 $lang['gen_hamradio_transmit_power'] = '发射功率 (W)';
@@ -91,11 +99,15 @@ $lang['gen_hamradio_county_reference'] = '县（美国）';
 $lang['gen_hamradio_iota_reference'] = 'IOTA 参考';
 $lang['gen_hamradio_sota_reference'] = 'SOTA 参考';
 $lang['gen_hamradio_wwff_reference'] = 'WWFF 参考';
+$lang['gen_hamradio_pota_reference'] = 'POTA 参考';
 $lang['gen_hamradio_dok'] = 'DOK';
 $lang['gen_hamradio_state'] = '州';
 $lang['gen_hamradio_iota'] = 'IOTA';
 $lang['gen_hamradio_sota'] = 'SOTA';
+$lang['gen_hamradio_wwff'] = 'WWFF';
+$lang['gen_hamradio_pota'] = 'POTA';
 $lang['gen_hamradio_gridsquare'] = '网格';
+$lang['gen_hamradio_operator'] = '操作员';
 
 $lang['gen_hamradio_sig'] = 'Sig';
 $lang['gen_hamradio_sig_info'] = 'Sig 属性';
@@ -109,3 +121,7 @@ $lang['dashboard_countries_breakdown'] = 'DXCC 实体分解';
 $lang['gen_from_date'] = '起始日期';
 
 $lang['gen_this_qso_was_confirmed_on'] = '该 QSO 确认于';
+
+$lang['error_no_logbook_found'] = '没有找到日志本。 您需要在台站日志下添加一个日志本! 在这里添加:';
+
+$lang['copy_to_clipboard'] = '复制到剪贴板';

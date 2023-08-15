@@ -143,6 +143,34 @@
          ]
       }
    },
+   "FO-118":{
+      "Modes":{
+         "H/U":[
+            {
+               "Uplink_Mode":"USB",
+               "Uplink_Freq":"21435000",
+               "Downlink_Mode":"USB",
+               "Downlink_Freq":"435505000"
+            }
+         ],
+         "V/U":[
+            {
+               "Uplink_Mode":"LSB",
+               "Uplink_Freq":"145820000",
+               "Downlink_Mode":"USB",
+               "Downlink_Freq":"435540000"
+            }
+         ],
+         "V/U":[
+            {
+               "Uplink_Mode":"FM",
+               "Uplink_Freq":"145925000",
+               "Downlink_Mode":"FM",
+               "Downlink_Freq":"435600000"
+            }
+         ]
+      }
+   },
    "TO-108":{
       "Modes":{
          "U/V":[
@@ -227,6 +255,18 @@
          ]
       }
    },
+   "HO-119":{
+      "Modes":{
+         "V/U":[
+            {
+               "Uplink_Mode":"LSB",
+               "Uplink_Freq":"145870000",
+               "Downlink_Mode":"USB",
+               "Downlink_Freq":"435180000"
+            }
+         ]
+      }
+   },
    "IO-86":{
       "Modes":{
          "V/U":[
@@ -235,6 +275,18 @@
                "Uplink_Freq":"145880000",
                "Downlink_Mode":"FM",
                "Downlink_Freq":"435880000"
+            }
+         ]
+      }
+   },
+   "IO-117":{
+      "Modes":{
+         "U":[
+            {
+               "Uplink_Mode":"PKT",
+               "Uplink_Freq":"435310000",
+               "Downlink_Mode":"PKT",
+               "Downlink_Freq":"435310000"
             }
          ]
       }
@@ -331,7 +383,7 @@
       "Modes":{
          "S/X":[
             {
-               "Uplink_Mode":"LSB",
+               "Uplink_Mode":"USB",
                "Uplink_Freq":"2400175000",
                "Downlink_Mode":"USB",
                "Downlink_Freq":"10489675000"

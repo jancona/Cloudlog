@@ -13,7 +13,7 @@
 
         <div class="card-body">
 
-            <form class="form" action="<?php echo site_url('kml/export'); ?>" method="post" enctype="multipart/form-data">
+            <form class="form" action="<?php echo site_url('kmlexport/export'); ?>" method="post" enctype="multipart/form-data">
 
                 <div class="form-group">
                     <label for="band">Band</label>
@@ -32,9 +32,13 @@
                     <select class="custom-select" id="dxcc_id" name="dxcc_id">
                         <option value="All">All</option>
                         <?php
-                        foreach($dxcc as $d){
-                            echo '<option value=' . $d->adif . '>' . $d->prefix . ' - ' . ucwords(strtolower(($d->name))) . '</option>';
-                        }
+                            foreach($dxcc as $d){
+                                echo '<option value=' . $d->adif . '>' . $d->prefix . ' - ' . ucwords(strtolower($d->name), "- (/");
+                                if ($d->Enddate != null) {
+                                    echo ' ('.lang('gen_hamradio_deleted_dxcc').')';
+                                }
+                                echo '</option>';
+                            }
                         ?>
 
                     </select>
@@ -72,6 +76,7 @@
                     <label for="selectPropagation">Propagation Mode</label>
                     <select class="custom-select" id="selectPropagation" name="prop_mode">
                         <option value="All">All</option>
+                        <option value="AS">Aircraft Scatter</option>
                         <option value="AUR">Aurora</option>
                         <option value="AUE">Aurora-E</option>
                         <option value="BS">Back scatter</option>

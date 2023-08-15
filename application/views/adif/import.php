@@ -32,9 +32,9 @@
 
                 <form class="form" action="<?php echo site_url('adif/import'); ?>" method="post" enctype="multipart/form-data">
                     <select name="station_profile" class="custom-select mb-2 mr-sm-2" style="width: 20%;">
-                    <option value="0">Select Station Profile</option>
+                    <option value="0">Select Station Location</option>
                     <?php foreach ($station_profile->result() as $station) { ?>
-                    <option value="<?php echo $station->station_id; ?>">Callsign: <?php echo $station->station_callsign; ?> (<?php echo $station->station_profile_name; ?>)</option>
+                    <option value="<?php echo $station->station_id; ?>" <?php if ($station->station_id == $this->stations->find_active()) { echo " selected =\"selected\""; } ?>>Callsign: <?php echo $station->station_callsign; ?> (<?php echo $station->station_profile_name; ?>)</option>
                     <?php } ?>
                     </select>
                   <label class="sr-only" for="inlineFormInputName2">ADIF file</label>
@@ -98,9 +98,9 @@
                 <h5 class="card-title">Take your logbook file anywhere!</h5>
                 <p class="card-text">Exporting ADIFs allows you to import contacts into third party applications like LoTW, Awards or just for keeping a backup.</p>
 					  <select name="station_profile" class="custom-select mb-2 mr-sm-2" style="width: 20%;">
-						  <option value="0">Select Station Profile</option>
+						  <option value="0">Select Station Location</option>
 						  <?php foreach ($station_profile->result() as $station) { ?>
-							  <option value="<?php echo $station->station_id; ?>">Callsign: <?php echo $station->station_callsign; ?> (<?php echo $station->station_profile_name; ?>)</option>
+                       <option value="<?php echo $station->station_id; ?>" <?php if ($station->station_id == $this->stations->find_active()) { echo " selected =\"selected\""; } ?>>Callsign: <?php echo $station->station_callsign; ?> (<?php echo $station->station_profile_name; ?>)</option>
 						  <?php } ?>
 					  </select>
                       <p class="card-text">From date:</p>
@@ -148,14 +148,14 @@
                 <h5>Export Satellite-Only QSOs</h5>
                 <p><a href="<?php echo site_url('adif/exportsat'); ?>" title="Export All Satellite Contacts" target="_blank" class="btn-sm btn-primary">Export All Satellite QSOs</a></p>
 
-                <p><a href="<?php echo site_url('adif/exportsatlotw'); ?>" title="Export All Satellite QSOS Confirmed on LoTW" target="_blank" class="btn-sm btn-primary">Export All Satellite QSOs Confirmed on LoTW</a></p>
+                <p><a href="<?php echo site_url('adif/exportsatlotw'); ?>" title="Export All Satellite QSOs Confirmed on LoTW" target="_blank" class="btn-sm btn-primary">Export All Satellite QSOs Confirmed on LoTW</a></p>
                 </div>
 
 
         <div class="tab-pane fade" id="lotw" role="tabpanel" aria-labelledby="home-tab">
             <form class="form" action="<?php echo site_url('adif/mark_lotw'); ?>" method="post" enctype="multipart/form-data">
 				<select name="station_profile" class="custom-select mb-2 mr-sm-2" style="width: 20%;">
-					<option value="0">Select Station Profile</option>
+					<option value="0">Select Station Location</option>
 					<?php foreach ($station_profile->result() as $station) { ?>
 						<option value="<?php echo $station->station_id; ?>">Callsign: <?php echo $station->station_callsign; ?> (<?php echo $station->station_profile_name; ?>)</option>
 					<?php } ?>

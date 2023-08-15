@@ -40,7 +40,6 @@ $lang['general_word_received'] = 'Received';
 $lang['general_word_requested'] = 'Requested';
 $lang['general_word_queued'] = 'Queued';
 $lang['general_word_invalid_ignore'] = 'Invalid (Ignore)';
-
 $lang['general_word_qslcard'] = 'QSL Card';
 $lang['general_word_qslcard_management'] = 'QSL Management';
 $lang['general_word_qslcards'] = 'QSL Cards';
@@ -49,6 +48,9 @@ $lang['general_word_qslcard_bureau'] = 'Bureau';
 $lang['general_word_qslcard_electronic'] = 'Electronic';
 $lang['general_word_qslcard_manager'] = 'Manager';
 $lang['general_word_qslcard_via'] = 'Via';
+$lang['general_word_eqslcard'] = 'eQSL Card';
+$lang['general_word_eqslcards'] = 'eQSL Cards';
+$lang['general_word_lotw'] = 'Logbook of the World';
 
 $lang['general_edit_qso'] = 'Edit QSO';
 $lang['general_mark_qsl_rx_bureau'] = 'Mark QSL Received (Bureau)';
@@ -71,7 +73,7 @@ $lang['gen_hamradio_call'] = 'Call';
 $lang['gen_hamradio_callsign'] = 'Callsign';
 $lang['gen_hamradio_mode'] = 'Mode';
 $lang['gen_hamradio_rst_sent'] = 'Sent';
-$lang['gen_hamradio_rst_recv'] = 'Recv\'d';
+$lang['gen_hamradio_rst_rcvd'] = 'Recv\'d';
 $lang['gen_hamradio_band'] = 'Band';
 $lang['gen_hamradio_band_rx'] = 'Band (RX)';
 $lang['gen_hamradio_frequency'] = 'Frequency';
@@ -80,7 +82,7 @@ $lang['gen_hamradio_radio'] = 'Radio';
 $lang['gen_hamradio_rsts'] = 'RST (S)';
 $lang['gen_hamradio_rstr'] = 'RST (R)';
 $lang['gen_hamradio_exchange_sent_short'] = 'Exch (S)';
-$lang['gen_hamradio_exchange_recv_short'] = 'Exch (R)';
+$lang['gen_hamradio_exchange_rcvd_short'] = 'Exch (R)';
 $lang['gen_hamradio_qsl'] = 'QSL';
 $lang['gen_hamradio_locator'] = 'Locator';
 $lang['gen_hamradio_transmit_power'] = 'Transmit Power (W)';
@@ -93,16 +95,22 @@ $lang['gen_hamradio_logbook'] = 'Logbook';
 
 $lang['gen_hamradio_cq_zone'] = 'CQ Zone';
 $lang['gen_hamradio_dxcc'] = 'DXCC';
+$lang['gen_hamradio_deleted_dxcc'] = 'Deleted DXCC';
+$lang['gen_hamradio_continent'] = 'Continent';
 $lang['gen_hamradio_usa_state'] = 'USA State';
 $lang['gen_hamradio_county_reference'] = 'USA County';
 $lang['gen_hamradio_iota_reference'] = 'IOTA Reference';
 $lang['gen_hamradio_sota_reference'] = 'SOTA Reference';
 $lang['gen_hamradio_wwff_reference'] = 'WWFF Reference';
+$lang['gen_hamradio_pota_reference'] = 'POTA Reference';
 $lang['gen_hamradio_dok'] = 'DOK';
 $lang['gen_hamradio_state'] = 'State';
 $lang['gen_hamradio_iota'] = 'IOTA';
 $lang['gen_hamradio_sota'] = 'SOTA';
+$lang['gen_hamradio_wwff'] = 'WWFF';
+$lang['gen_hamradio_pota'] = 'POTA';
 $lang['gen_hamradio_gridsquare'] = 'Gridsquare';
+$lang['gen_hamradio_distance'] = 'Distance';
 $lang['gen_hamradio_operator'] = 'Operator';
 
 $lang['gen_hamradio_sig'] = 'Sig';
@@ -117,3 +125,17 @@ $lang['dashboard_countries_breakdown'] = 'Countries Breakdown';
 $lang['gen_from_date'] = 'From date';
 
 $lang['gen_this_qso_was_confirmed_on'] = 'This QSO was confirmed on';
+
+$lang['error_no_logbook_found'] = 'No logbooks were found. You need to define a logbook under Station Logbooks! Do it here:';
+
+$lang['copy_to_clipboard'] = 'Copy to clipboard';
+
+$lang['africa'] = 'Africa';
+$lang['antarctica'] = 'Antarctica';
+$lang['asia'] = 'Asia';
+$lang['europe'] = 'Europe';
+$lang['northamerica'] = 'North America';
+$lang['oceania'] = 'Oceania';
+$lang['southamerica'] = 'South America';
+
+$lang['gen_band_selection'] = 'Band selection';

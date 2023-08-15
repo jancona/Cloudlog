@@ -9,6 +9,9 @@ class User extends CI_Controller {
 		// Load language files
 		$this->lang->load(array(
 			'account',
+			'lotw',
+			'eqsl',
+			'admin',
 		));
 	}
 
@@ -19,7 +22,7 @@ class User extends CI_Controller {
 
 		$data['results'] = $this->user_model->users();
 
-		$data['page_title'] = "User Accounts";
+		$data['page_title'] = $this->lang->line('admin_user_accounts');
 
 		$this->load->view('interface_assets/header', $data);
 		$this->load->view('user/main');
@@ -40,7 +43,11 @@ class User extends CI_Controller {
 		$this->form_validation->set_rules('user_lastname', 'Last name', 'required');
 		$this->form_validation->set_rules('user_callsign', 'Callsign', 'required');
 		$this->form_validation->set_rules('user_locator', 'Locator', 'required');
+		$this->form_validation->set_rules('user_locator', 'Locator', 'callback_check_locator');
 		$this->form_validation->set_rules('user_timezone', 'Timezone', 'required');
+
+		// Get themes list
+		$data['themes'] = $this->user_model->getThemes();
 
 		// Get timezones
 		$data['timezones'] = $this->user_model->timezones();
@@ -64,13 +71,19 @@ class User extends CI_Controller {
 				$data['user_timezone'] = $this->input->post('user_timezone');
                 $data['user_measurement_base'] = $this->input->post('user_measurement_base');
                 $data['user_stylesheet'] = $this->input->post('user_stylesheet');
+				$data['user_qth_lookup'] = $this->input->post('user_qth_lookup');
 				$data['user_sota_lookup'] = $this->input->post('user_sota_lookup');
+				$data['user_wwff_lookup'] = $this->input->post('user_wwff_lookup');
+				$data['user_pota_lookup'] = $this->input->post('user_pota_lookup');
 				$data['user_show_notes'] = $this->input->post('user_show_notes');
 				$data['user_column1'] = $this->input->post('user_column1');
 				$data['user_column2'] = $this->input->post('user_column2');
 				$data['user_column3'] = $this->input->post('user_column3');
 				$data['user_column4'] = $this->input->post('user_column4');
 				$data['user_column5'] = $this->input->post('user_column5');
+				$data['user_show_profile_image'] = $this->input->post('user_show_profile_image');
+				$data['user_previous_qsl_type'] = $this->input->post('user_previous_qsl_type');
+				$data['user_amsat_status_upload'] = $this->input->post('user_amsat_status_upload');
 				$this->load->view('user/add', $data);
 			} else {
 				$this->load->view('user/add', $data);
@@ -91,13 +104,19 @@ class User extends CI_Controller {
 				$this->input->post('user_measurement_base'),
 				$this->input->post('user_date_format'),
 				$this->input->post('user_stylesheet'),
+				$this->input->post('user_qth_lookup'),
 				$this->input->post('user_sota_lookup'),
+				$this->input->post('user_wwff_lookup'),
+				$this->input->post('user_pota_lookup'),
 				$this->input->post('user_show_notes'),
 				$this->input->post('user_column1'),
 				$this->input->post('user_column2'),
 				$this->input->post('user_column3'),
 				$this->input->post('user_column4'),
-				$this->input->post('user_column5'))) {
+				$this->input->post('user_column5'),
+				$this->input->post('user_show_profile_image'),
+				$this->input->post('user_previous_qsl_type'),
+				$this->input->post('user_amsat_status_upload'))) {
 				// Check for errors
 				case EUSERNAMEEXISTS:
 					$data['username_error'] = 'Username <b>'.$this->input->post('user_name').'</b> already in use!';
@@ -127,13 +146,19 @@ class User extends CI_Controller {
 			$data['user_locator'] = $this->input->post('user_locator');
             $data['user_measurement_base'] = $this->input->post('user_measurement_base');
             $data['user_stylesheet'] = $this->input->post('user_stylesheet');
+			$data['user_qth_lookup'] = $this->input->post('user_qth_lookup');
 			$data['user_sota_lookup'] = $this->input->post('user_sota_lookup');
+			$data['user_wwff_lookup'] = $this->input->post('user_wwff_lookup');
+			$data['user_pota_lookup'] = $this->input->post('user_pota_lookup');
 			$data['user_show_notes'] = $this->input->post('user_show_notes');
 			$data['user_column1'] = $this->input->post('user_column1');
 			$data['user_column2'] = $this->input->post('user_column2');
 			$data['user_column3'] = $this->input->post('user_column3');
 			$data['user_column4'] = $this->input->post('user_column4');
 			$data['user_column5'] = $this->input->post('user_column5');
+			$data['user_show_profile_image'] = $this->input->post('user_show_profile_image');
+			$data['user_previous_qsl_type'] = $this->input->post('user_previous_qsl_type');
+			$data['user_amsat_status_upload'] = $this->input->post('user_amsat_status_upload');
 			$this->load->view('user/add', $data);
 			$this->load->view('interface_assets/footer');
 		}
@@ -155,8 +180,11 @@ class User extends CI_Controller {
 		$this->form_validation->set_rules('user_firstname', 'First name', 'required|xss_clean');
 		$this->form_validation->set_rules('user_lastname', 'Last name', 'required|xss_clean');
 		$this->form_validation->set_rules('user_callsign', 'Callsign', 'trim|required|xss_clean');
-		$this->form_validation->set_rules('user_locator', 'Locator', 'required|xss_clean');
+		$this->form_validation->set_rules('user_locator', 'Locator', 'callback_check_locator');
 		$this->form_validation->set_rules('user_timezone', 'Timezone', 'required');
+
+		// Get themes list
+		$data['themes'] = $this->user_model->getThemes();
 
 		// Get timezones
 		$data['timezones'] = $this->user_model->timezones();
@@ -290,16 +318,52 @@ class User extends CI_Controller {
                 $data['user_stylesheet'] = $q->user_stylesheet;
             }
 
+			if($this->input->post('user_qth_lookup')) {
+				$data['user_qth_lookup'] = $this->input->post('user_qth_lookup', true);
+			} else {
+				$data['user_qth_lookup'] = $q->user_qth_lookup;
+			}
+
 			if($this->input->post('user_sota_lookup')) {
 				$data['user_sota_lookup'] = $this->input->post('user_sota_lookup', true);
 			} else {
 				$data['user_sota_lookup'] = $q->user_sota_lookup;
 			}
 
+			if($this->input->post('user_wwff_lookup')) {
+				$data['user_wwff_lookup'] = $this->input->post('user_wwff_lookup', true);
+			} else {
+				$data['user_wwff_lookup'] = $q->user_wwff_lookup;
+			}
+
+			if($this->input->post('user_pota_lookup')) {
+				$data['user_pota_lookup'] = $this->input->post('user_pota_lookup', true);
+			} else {
+				$data['user_pota_lookup'] = $q->user_pota_lookup;
+			}
+
 			if($this->input->post('user_show_notes')) {
 				$data['user_show_notes'] = $this->input->post('user_show_notes', true);
 			} else {
 				$data['user_show_notes'] = $q->user_show_notes;
+			}
+
+			if($this->input->post('user_show_profile_image')) {
+				$data['user_show_profile_image'] = $this->input->post('user_show_profile_image', false);
+			} else {
+				$data['user_show_profile_image'] = $q->user_show_profile_image;
+			}
+
+			if($this->input->post('user_previous_qsl_type')) {
+				$data['user_previous_qsl_type'] = $this->input->post('user_previous_qsl_type', false);
+			} else {
+				$data['user_previous_qsl_type'] = $q->user_previous_qsl_type;
+			}
+
+			if($this->input->post('user_amsat_status_upload')) {
+				$data['user_amsat_status_upload'] = $this->input->post('user_amsat_status_upload', false);
+			} else {
+				$data['user_amsat_status_upload'] = $q->user_amsat_status_upload;
 			}
 
 			if($this->input->post('user_column1')) {
@@ -373,7 +437,10 @@ class User extends CI_Controller {
 			$data['user_locator'] = $this->input->post('user_locator', true);
 			$data['user_timezone'] = $this->input->post('user_timezone', true);
             $data['user_stylesheet'] = $this->input->post('user_stylesheet');
+			$data['user_qth_lookup'] = $this->input->post('user_qth_lookup');
 			$data['user_sota_lookup'] = $this->input->post('user_sota_lookup');
+			$data['user_wwff_lookup'] = $this->input->post('user_wwff_lookup');
+			$data['user_pota_lookup'] = $this->input->post('user_pota_lookup');
 			$data['user_show_notes'] = $this->input->post('user_show_notes');
 			$data['user_column1'] = $this->input->post('user_column1');
 			$data['user_column2'] = $this->input->post('user_column2');
@@ -381,6 +448,9 @@ class User extends CI_Controller {
 			$data['user_column4'] = $this->input->post('user_column4');
 			$data['user_column4'] = $this->input->post('user_column4');
 			$data['user_column5'] = $this->input->post('user_column5');
+			$data['user_show_profile_image'] = $this->input->post('user_show_profile_image');
+			$data['user_previous_qsl_type'] = $this->input->post('user_previous_qsl_type');
+			$data['user_amsat_status_upload'] = $this->input->post('user_amsat_status_upload');
 			$this->load->view('user/edit');
 			$this->load->view('interface_assets/footer');
 		}
@@ -453,7 +523,7 @@ class User extends CI_Controller {
 		if ($this->form_validation->run() == FALSE)
 		{
 			$data['page_title'] = "Login";
-			$this->load->view('interface_assets/header', $data);
+			$this->load->view('interface_assets/mini_header', $data);
 			$this->load->view('user/login');
 			$this->load->view('interface_assets/footer');
 
@@ -481,4 +551,138 @@ class User extends CI_Controller {
 		$this->session->set_flashdata('notice', 'User '.$user_name.' logged out.');
 		redirect('dashboard');
 	}
+
+	/**
+	 * Function: forgot_password
+	 * 
+	 * Allows users to input an email address and a password will be sent to that address.
+	 * 
+	 */
+	function forgot_password() {
+
+		$this->load->helper(array('form', 'url'));
+
+		$this->load->library('form_validation');
+
+		$this->form_validation->set_rules('email', 'Email', 'required');
+
+		if ($this->form_validation->run() == FALSE)
+		{
+			$data['page_title'] = "Forgot Password";
+			$this->load->view('interface_assets/mini_header', $data);
+			$this->load->view('user/forgot_password');
+			$this->load->view('interface_assets/footer');
+		}
+		else
+		{
+			// Check email address exists
+			$this->load->model('user_model');
+			
+			$check_email = $this->user_model->check_email_address($this->input->post('email', true));
+
+			if($check_email == TRUE) {
+				// Generate password reset code 50 characters long
+				$this->load->helper('string');
+				$reset_code = random_string('alnum', 50);
+
+				$this->user_model->set_password_reset_code($this->input->post('email', true), $reset_code);
+				
+				// Send email with reset code
+
+				$this->data['reset_code'] = $reset_code;
+				$this->load->library('email');
+
+				if($this->optionslib->get_option('emailProtocol') == "smtp") {
+					$config = Array(
+						'protocol' => $this->optionslib->get_option('emailProtocol'),
+						'smtp_host' => $this->optionslib->get_option('smtpHost'),
+						'smtp_port' => $this->optionslib->get_option('smtpPort'),
+						'smtp_user' => $this->optionslib->get_option('smtpUsername'),
+						'smtp_pass' => $this->optionslib->get_option('smtpPassword'),
+						'crlf' => "\r\n",
+						'newline' => "\r\n"
+					  );
+
+					  $this->email->initialize($config);
+				}
+
+				$message = $this->load->view('email/forgot_password', $this->data,  TRUE);
+
+				$this->email->from($this->optionslib->get_option('emailAddress'), $this->optionslib->get_option('emailSenderName'));
+				$this->email->to($this->input->post('email', true));
+
+				$this->email->subject('Cloudlog Account Password Reset');
+				$this->email->message($message);
+
+				if (! $this->email->send())
+				{
+					// Redirect to login page with message
+					$this->session->set_flashdata('warning', 'Email settings are incorrect.');
+					redirect('user/login');
+				} else {
+					// Redirect to login page with message
+					$this->session->set_flashdata('notice', 'Password Reset Processed.');
+					redirect('user/login');
+				}
+			} else {
+				// No account found just return to login page
+				$this->session->set_flashdata('notice', 'Password Reset Processed.');
+				redirect('user/login');
+			}
+		}
+	}
+
+	function reset_password($reset_code = NULL)
+	{
+		$data['reset_code'] = $reset_code;
+		if($reset_code != NULL) {
+			$this->load->helper(array('form', 'url'));
+
+			$this->load->library('form_validation');
+	
+			$this->form_validation->set_rules('password', 'Password', 'required');
+			$this->form_validation->set_rules('password_confirm', 'Password Confirmation', 'required|matches[password]');
+	
+			if ($this->form_validation->run() == FALSE)
+			{
+				$data['page_title'] = "Reset Password";
+				$this->load->view('interface_assets/mini_header', $data);
+				$this->load->view('user/reset_password');
+				$this->load->view('interface_assets/footer');
+			}
+			else
+			{
+				// Lets reset the password!
+				$this->load->model('user_model');
+			
+				$this->user_model->reset_password($this->input->post('password', true), $reset_code);
+				$this->session->set_flashdata('notice', 'Password Reset.');
+				redirect('user/login');
+			}
+		} else {
+			redirect('user/login');
+		}
+	}
+
+   function check_locator($grid) {
+      $grid = $this->input->post('user_locator');
+      // Allow empty locator
+      if (preg_match('/^$/', $grid)) return true;
+      // Allow 6-digit locator
+      if (preg_match('/^[A-Ra-r]{2}[0-9]{2}[A-Za-z]{2}$/', $grid)) return true;
+      // Allow 4-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 4-digit grid line
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 4-digit grid corner
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 2-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}$/', $grid)) return true;
+      // Allow 8-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2}[A-Za-z]{2}[0-9]{2}$/', $grid)) return true;
+      else {
+         $this->form_validation->set_message('check_locator', 'Please check value for grid locator ('.strtoupper($grid).').');
+         return false;
+      }
+   }
 }

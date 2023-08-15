@@ -24,7 +24,7 @@
             </div>
 
             <div class="form-group row">
-                <div class="col-md-2">QSL / LoTW</div>
+                <div class="col-md-2">QSL Type</div>
                 <div class="col-md-10">
                     <div class="form-check-inline">
                         <input class="form-check-input" type="checkbox" name="qsl" value="1" id="qsl" <?php if ($this->input->post('qsl') || $this->input->method() !== 'post') echo ' checked="checked"'; ?> >
@@ -33,6 +33,10 @@
                     <div class="form-check-inline">
                         <input class="form-check-input" type="checkbox" name="lotw" value="1" id="lotw" <?php if ($this->input->post('lotw') || $this->input->method() !== 'post') echo ' checked="checked"'; ?> >
                         <label class="form-check-label" for="lotw">LoTW</label>
+                    </div>
+<div class="form-check-inline">
+                        <input class="form-check-input" type="checkbox" name="eqsl" value="1" id="eqsl" <?php if ($this->input->post('eqsl')) echo ' checked="checked"'; ?> >
+                        <label class="form-check-label" for="eqsl">eQSL</label>
                     </div>
                 </div>
             </div>
@@ -78,7 +82,9 @@
                 <div class="col-md-10">
                     <button id="button2id" type="reset" name="button2id" class="btn btn-sm btn-warning">Reset</button>
                     <button id="button1id" type="submit" name="button1id" class="btn btn-sm btn-primary">Show</button>
-					<button type="button" onclick="load_was_map();" class="btn btn-info btn-sm"><i class="fas fa-globe-americas"></i> Show WAS Map</button>
+					<?php if ($was_array) {
+                        ?><button type="button" onclick="load_was_map();" class="btn btn-info btn-sm"><i class="fas fa-globe-americas"></i> Show WAS Map</button>
+                    <?php }?>
                 </div>
             </div>
 
@@ -118,7 +124,7 @@
         <thead>
         <tr><td></td>';
 
-        foreach($worked_bands as $band) {
+        foreach($bands as $band) {
             echo '<td>' . $band . '</td>';
         }
         echo '<td>Total</td></tr>

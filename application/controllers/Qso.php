@@ -20,29 +20,32 @@ class QSO extends CI_Controller {
 
 	public function index()
 	{
-
 		$this->load->model('cat');
 		$this->load->model('stations');
 		$this->load->model('logbook_model');
 		$this->load->model('user_model');
 		$this->load->model('modes');
+        $this->load->model('bands');
         if(!$this->user_model->authorize(2)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
 
 		$data['active_station_profile'] = $this->stations->find_active();
+        
 		$data['notice'] = false;
-		$data['stations'] = $this->stations->all();
+		$data['stations'] = $this->stations->all_of_user();
 		$data['radios'] = $this->cat->radios();
 		$data['query'] = $this->logbook_model->last_custom('5');
 		$data['dxcc'] = $this->logbook_model->fetchDxcc();
 		$data['iota'] = $this->logbook_model->fetchIota();
 		$data['modes'] = $this->modes->active();
-
+		$data['bands'] = $this->bands->get_user_bands_for_qso_entry();
+		$data['sat_active'] = array_search("SAT", $this->bands->get_user_bands(), true);
 
 		$this->load->library('form_validation');
 
 		$this->form_validation->set_rules('start_date', 'Date', 'required');
 		$this->form_validation->set_rules('start_time', 'Time', 'required');
 		$this->form_validation->set_rules('callsign', 'Callsign', 'required');
+		$this->form_validation->set_rules('locator', 'Locator', 'callback_check_locator');
 
 		if ($this->form_validation->run() == FALSE)
 		{
@@ -153,6 +156,7 @@ class QSO extends CI_Controller {
         $this->load->model('logbook_model');
         $this->load->model('user_model');
         $this->load->model('modes');
+        $this->load->model('bands');
 		$this->load->model('contesting_model');
 
         $this->load->library('form_validation');
@@ -168,6 +172,7 @@ class QSO extends CI_Controller {
         $data['dxcc'] = $this->logbook_model->fetchDxcc();
         $data['iota'] = $this->logbook_model->fetchIota();
         $data['modes'] = $this->modes->all();
+        $data['bands'] = $this->bands->get_user_bands_for_qso_entry(true);
         $data['contest'] = $this->contesting_model->getActivecontests();
 
         $this->load->view('qso/edit_ajax', $data);
@@ -316,24 +321,66 @@ class QSO extends CI_Controller {
 
 		$this->load->library('frequency');
 
-		echo $this->frequency->convent_band($band, $mode);
+		echo $this->frequency->convert_band($band, $mode);
 	}
 
 	/*
 	 * Function is used for autocompletion of SOTA in the QSO entry form
 	 */
 	public function get_sota() {
+		$this->load->library('sota');
+		$json = [];
+
+		if (!empty($this->input->get("query"))) {
+			$query = $_GET['query'] ?? FALSE;
+			$json = $this->sota->get($query);
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode($json);
+	}
+
+	public function get_wwff() {
         $json = [];
 
         if(!empty($this->input->get("query"))) {
             $query = isset($_GET['query']) ? $_GET['query'] : FALSE;
-            $sota = strtoupper($query);
+            $wwff = strtoupper($query);
 
-            $file = 'assets/json/sota.txt';
+            $file = 'assets/json/wwff.txt';
 
             if (is_readable($file)) {
                 $lines = file($file, FILE_IGNORE_NEW_LINES);
-                $input = preg_quote($sota, '~');
+                $input = preg_quote($wwff, '~');
+                $reg = '~^'. $input .'(.*)$~';
+                $result = preg_grep($reg, $lines);
+                $json = [];
+                $i = 0;
+                foreach ($result as &$value) {
+                    // Limit to 100 as to not slowdown browser too much
+                    if (count($json) <= 100) {
+                        $json[] = ["name"=>$value];
+                    }
+                }
+            }
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($json);
+    }
+
+	public function get_pota() {
+        $json = [];
+
+        if(!empty($this->input->get("query"))) {
+            $query = isset($_GET['query']) ? $_GET['query'] : FALSE;
+            $pota = strtoupper($query);
+
+            $file = 'assets/json/pota.txt';
+
+            if (is_readable($file)) {
+                $lines = file($file, FILE_IGNORE_NEW_LINES);
+                $input = preg_quote($pota, '~');
                 $reg = '~^'. $input .'(.*)$~';
                 $result = preg_grep($reg, $lines);
                 $json = [];
@@ -418,28 +465,61 @@ class QSO extends CI_Controller {
         echo json_encode($json);
     }
 
-    public function get_sota_info() {
-		$sota = xss_clean($this->input->post('sota'));
-		$url = 'https://api2.sota.org.uk/api/summits/' . $sota;
+   public function get_sota_info() {
+      $this->load->library('sota');
 
-		// Let's use cURL instead of file_get_contents
-		// begin script
-		$ch = curl_init();
+      $sota = xss_clean($this->input->post('sota'));
 
-		// basic curl options for all requests
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
+      header('Content-Type: application/json');
+      echo $this->sota->info($sota);
+   }
 
-		// use the URL we built
-		curl_setopt($ch, CURLOPT_URL, $url);
+   public function get_wwff_info() {
+      $this->load->library('wwff');
 
-		$input = curl_exec($ch);
-		$chi = curl_getinfo($ch);
+      $wwff = xss_clean($this->input->post('wwff'));
 
-		// Close cURL handle
-		curl_close($ch);
+      header('Content-Type: application/json');
+      echo $this->wwff->info($wwff);
+   }
 
-		header('Content-Type: application/json');
-		echo $input;
-	}
+   public function get_pota_info() {
+      $this->load->library('pota');
+
+      $pota = xss_clean($this->input->post('pota'));
+
+      header('Content-Type: application/json');
+      echo $this->pota->info($pota);
+   }
+
+   public function get_station_power() {
+      $this->load->model('stations');
+      $stationProfile = xss_clean($this->input->post('stationProfile'));
+      $data = array('station_power' => $this->stations->get_station_power($stationProfile));
+
+      header('Content-Type: application/json');
+      echo json_encode($data);
+   }
+
+   function check_locator($grid) {
+      $grid = $this->input->post('locator');
+      // Allow empty locator
+      if (preg_match('/^$/', $grid)) return true;
+      // Allow 6-digit locator
+      if (preg_match('/^[A-Ra-r]{2}[0-9]{2}[A-Za-z]{2}$/', $grid)) return true;
+      // Allow 4-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 4-digit grid line
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 4-digit grid corner
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2},[A-Ra-r]{2}[0-9]{2}$/', $grid)) return true;
+      // Allow 2-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}$/', $grid)) return true;
+      // Allow 8-digit locator
+      else if (preg_match('/^[A-Ra-r]{2}[0-9]{2}[A-Za-z]{2}[0-9]{2}$/', $grid)) return true;
+      else {
+         $this->form_validation->set_message('check_locator', 'Please check value for grid locator ('.strtoupper($grid).').');
+         return false;
+      }
+   }
 }

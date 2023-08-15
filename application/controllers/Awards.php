@@ -14,6 +14,10 @@ class Awards extends CI_Controller {
 
 		$this->load->model('user_model');
 		if(!$this->user_model->authorize(2)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
+		$this->lang->load(array(
+			'lotw',
+			'eqsl'
+		));
 	}
 
 	public function index()
@@ -27,10 +31,63 @@ class Awards extends CI_Controller {
 
 	public function dok ()
 	{
-		//echo "Needs Developed";
+
+		$CI =& get_instance();
+		$CI->load->model('logbooks_model');
+		$logbooks_locations_array = $CI->logbooks_model->list_logbook_relationships($this->session->userdata('active_station_logbook'));
+
 		$this->load->model('dok');
-		$data['doks'] = $this->dok->show_stats();
-		$data['worked_bands'] = $this->dok->get_worked_bands();
+		$this->load->model('bands');
+		$this->load->model('modes');
+
+		if($this->input->method() === 'post') {
+			$postdata['doks'] = $this->input->post('doks');
+		} else {
+			$postdata['doks'] = 'both';
+		}
+
+		$data['worked_bands'] = $this->bands->get_worked_bands('dok');
+		$data['modes'] = $this->modes->active();
+
+		if ($this->input->post('band') != NULL) {
+			if ($this->input->post('band') == 'All') {
+				$bands = $data['worked_bands'];
+			} else {
+				$bands[] = $this->input->post('band');
+			}
+		} else {
+			$bands = $data['worked_bands'];
+		}
+
+		$data['bands'] = $bands;
+
+		if($this->input->method() === 'post') {
+			$postdata['qsl'] = $this->input->post('qsl');
+			$postdata['lotw'] = $this->input->post('lotw');
+			$postdata['eqsl'] = $this->input->post('eqsl');
+			$postdata['worked'] = $this->input->post('worked');
+			$postdata['confirmed'] = $this->input->post('confirmed');
+			$postdata['band'] = $this->input->post('band');
+			$postdata['mode'] = $this->input->post('mode');
+		} else {
+			$postdata['qsl'] = 1;
+			$postdata['lotw'] = 1;
+			$postdata['eqsl'] = 0;
+			$postdata['worked'] = 1;
+			$postdata['confirmed'] = 1;
+			$postdata['band'] = 'All';
+			$postdata['mode'] = 'All';
+		}
+
+		if ($logbooks_locations_array) {
+			$location_list = "'".implode("','",$logbooks_locations_array)."'";
+			$data['dok_array'] = $this->dok->get_dok_array($bands, $postdata, $location_list);
+			$data['dok_summary'] = $this->dok->get_dok_summary($bands, $postdata, $location_list);
+		} else {
+			$location_list = null;
+			$data['dok_array'] = null;
+			$data['dok_summary'] = null;
+		}
 
 		// Render Page
 		$data['page_title'] = "Awards - DOK";
@@ -53,9 +110,7 @@ class Awards extends CI_Controller {
         $arguments["format"] = "json";
         $arguments["limit"] = '';
         $arguments["order"] = '';
-
-        // print_r($arguments);
-        // return;
+        $arguments["join_station_profile"] = true;
 
         // Load the API and Logbook models
         $this->load->model('api_model');
@@ -69,15 +124,16 @@ class Awards extends CI_Controller {
 
         // Render Page
         $data['page_title'] = "Log View - DOK";
-        $data['filter'] = str_replace("&#40;and&#41;", ", ", $q);//implode(", ", array_keys($a));
+        $data['filter'] = str_replace("&#40;and&#41;", ", ", $q);
         $this->load->view('awards/details', $data);
     }
 
 	public function dxcc ()	{
 		$this->load->model('dxcc');
         $this->load->model('modes');
+        $this->load->model('bands');
 
-        $data['worked_bands'] = $this->dxcc->get_worked_bands(); // Used in the view for band select
+        $data['worked_bands'] = $this->bands->get_worked_bands('dxcc'); // Used in the view for band select
         $data['modes'] = $this->modes->active(); // Used in the view for mode select
 
         if ($this->input->post('band') != NULL) {   // Band is not set when page first loads.
@@ -95,8 +151,9 @@ class Awards extends CI_Controller {
         $data['bands'] = $bands; // Used for displaying selected band(s) in the table in the view
 
         if($this->input->method() === 'post') {
-            $postdata['lotw'] = $this->input->post('lotw');
             $postdata['qsl'] = $this->input->post('qsl');
+            $postdata['lotw'] = $this->input->post('lotw');
+            $postdata['eqsl'] = $this->input->post('eqsl');
             $postdata['worked'] = $this->input->post('worked');
             $postdata['confirmed'] = $this->input->post('confirmed');
             $postdata['notworked'] = $this->input->post('notworked');
@@ -112,12 +169,13 @@ class Awards extends CI_Controller {
             $postdata['mode'] = $this->input->post('mode');
         }
         else { // Setting default values at first load of page
-            $postdata['lotw'] = 1;
             $postdata['qsl'] = 1;
+            $postdata['lotw'] = 1;
+            $postdata['eqsl'] = 0;
             $postdata['worked'] = 1;
             $postdata['confirmed'] = 1;
             $postdata['notworked'] = 1;
-            $postdata['includedeleted'] = 1;
+            $postdata['includedeleted'] = 0;
             $postdata['Africa'] = 1;
             $postdata['Asia'] = 1;
             $postdata['Europe'] = 1;
@@ -131,7 +189,7 @@ class Awards extends CI_Controller {
 
 		$dxcclist = $this->dxcc->fetchdxcc($postdata);
         $data['dxcc_array'] = $this->dxcc->get_dxcc_array($dxcclist, $bands, $postdata);
-        $data['dxcc_summary'] = $this->dxcc->get_dxcc_summary($data['worked_bands']);
+        $data['dxcc_summary'] = $this->dxcc->get_dxcc_summary($bands, $postdata);
 
 		// Render Page
 		$data['page_title'] = "Awards - DXCC";
@@ -142,7 +200,8 @@ class Awards extends CI_Controller {
 
     public function vucc()	{
         $this->load->model('vucc');
-        $data['worked_bands'] = $this->vucc->get_worked_bands();
+        $this->load->model('bands');
+        $data['worked_bands'] = $this->bands->get_worked_bands('vucc');
 
         $data['vucc_array'] = $this->vucc->get_vucc_array($data);
 
@@ -192,8 +251,9 @@ class Awards extends CI_Controller {
 		$band = str_replace('"', "", $this->input->post("Band"));
 		$mode = str_replace('"', "", $this->input->post("Mode"));
 		$type = $this->input->post('Type');
+		$qsl = $this->input->post('QSL') == null ? '' : $this->input->post('QSL');
 
-		$data['results'] = $this->logbook_model->qso_details($searchphrase, $band, $mode, $type);
+		$data['results'] = $this->logbook_model->qso_details($searchphrase, $band, $mode, $type, $qsl);
 
 		// This is done because we have two different ways to get dxcc info in Cloudlog. Once is using the name (in awards), and the other one is using the ADIF DXCC.
 		// We replace the values to make it look a bit nicer
@@ -203,9 +263,23 @@ class Awards extends CI_Controller {
 			$searchphrase = $dxccname['name'];
 		}
 
+		$qsltype = [];
+		if (strpos($qsl, "Q") !== false) {
+			$qsltype[] = "QSL";
+		}
+		if (strpos($qsl, "L") !== false) {
+			$qsltype[] = "LoTW";
+		}
+		if (strpos($qsl, "E") !== false) {
+			$qsltype[] = "eQSL";
+		}
+
 		// Render Page
 		$data['page_title'] = "Log View - " . $type;
 		$data['filter'] = $type . " " . $searchphrase . " and band ".$band . " and mode ".$mode;
+		if (!empty($qsltype)) {
+			$data['filter'] .= " and ".implode('/', $qsltype);
+		}
 		$this->load->view('awards/details', $data);
 	}
 
@@ -226,15 +300,50 @@ class Awards extends CI_Controller {
 		$this->load->view('interface_assets/footer');
 	}
 
-	public function cq(){
+	/*
+		Handles showing worked WWFFs
+		Comment field - WWFF:#
+	*/
+	public function wwff() {
+
+		// Grab all worked wwff stations
+		$this->load->model('wwff');
+		$data['wwff_all'] = $this->wwff->get_all();
+
+		// Render page
+		$data['page_title'] = "Awards - WWFF";
+		$this->load->view('interface_assets/header', $data);
+		$this->load->view('awards/wwff/index');
+		$this->load->view('interface_assets/footer');
+	}
+
+	/*
+		Handles showing worked POTAs
+		Comment field - POTA:#
+	*/
+	public function pota() {
+
+		// Grab all worked pota stations
+		$this->load->model('pota');
+		$data['pota_all'] = $this->pota->get_all();
+
+		// Render page
+		$data['page_title'] = "Awards - POTA";
+		$this->load->view('interface_assets/header', $data);
+		$this->load->view('awards/pota/index');
+		$this->load->view('interface_assets/footer');
+	}
+
+	public function cq() {
 		$CI =& get_instance();
-		$CI->load->model('Stations');
-		$station_id = $CI->Stations->find_active();
+		$CI->load->model('logbooks_model');
+		$logbooks_locations_array = $CI->logbooks_model->list_logbook_relationships($this->session->userdata('active_station_logbook'));
 
         $this->load->model('cq');
 		$this->load->model('modes');
+        $this->load->model('bands');
 
-        $data['worked_bands'] = $this->cq->get_worked_bands($station_id);
+        $data['worked_bands'] = $this->bands->get_worked_bands('cq');
 		$data['modes'] = $this->modes->active(); // Used in the view for mode select
 
         if ($this->input->post('band') != NULL) {   // Band is not set when page first loads.
@@ -252,8 +361,9 @@ class Awards extends CI_Controller {
         $data['bands'] = $bands; // Used for displaying selected band(s) in the table in the view
 
         if($this->input->method() === 'post') {
-            $postdata['lotw'] = $this->input->post('lotw');
             $postdata['qsl'] = $this->input->post('qsl');
+            $postdata['lotw'] = $this->input->post('lotw');
+            $postdata['eqsl'] = $this->input->post('eqsl');
             $postdata['worked'] = $this->input->post('worked');
             $postdata['confirmed'] = $this->input->post('confirmed');
             $postdata['notworked'] = $this->input->post('notworked');
@@ -261,8 +371,9 @@ class Awards extends CI_Controller {
 			$postdata['mode'] = $this->input->post('mode');
         }
         else { // Setting default values at first load of page
-            $postdata['lotw'] = 1;
             $postdata['qsl'] = 1;
+            $postdata['lotw'] = 1;
+            $postdata['eqsl'] = 0;
             $postdata['worked'] = 1;
             $postdata['confirmed'] = 1;
             $postdata['notworked'] = 1;
@@ -270,8 +381,15 @@ class Awards extends CI_Controller {
 			$postdata['mode'] = 'All';
         }
 
-        $data['cq_array'] = $this->cq->get_cq_array($bands, $postdata, $station_id);
-        $data['cq_summary'] = $this->cq->get_cq_summary($data['worked_bands'], $station_id);
+        if ($logbooks_locations_array) {
+			$location_list = "'".implode("','",$logbooks_locations_array)."'";
+            $data['cq_array'] = $this->cq->get_cq_array($bands, $postdata, $location_list);
+            $data['cq_summary'] = $this->cq->get_cq_summary($bands, $postdata, $location_list);
+		} else {
+            $location_list = null;
+            $data['cq_array'] = null;
+            $data['cq_summary'] = null;
+        }
 
         // Render page
         $data['page_title'] = "Awards - CQ Magazine";
@@ -283,8 +401,9 @@ class Awards extends CI_Controller {
     public function was() {
         $this->load->model('was');
 		$this->load->model('modes');
+        $this->load->model('bands');
 
-        $data['worked_bands'] = $this->was->get_worked_bands();
+        $data['worked_bands'] = $this->bands->get_worked_bands('was');
 		$data['modes'] = $this->modes->active(); // Used in the view for mode select
 
         if ($this->input->post('band') != NULL) {   // Band is not set when page first loads.
@@ -302,8 +421,9 @@ class Awards extends CI_Controller {
         $data['bands'] = $bands; // Used for displaying selected band(s) in the table in the view
 
         if($this->input->method() === 'post') {
-            $postdata['lotw'] = $this->input->post('lotw');
             $postdata['qsl'] = $this->input->post('qsl');
+            $postdata['lotw'] = $this->input->post('lotw');
+            $postdata['eqsl'] = $this->input->post('eqsl');
             $postdata['worked'] = $this->input->post('worked');
             $postdata['confirmed'] = $this->input->post('confirmed');
             $postdata['notworked'] = $this->input->post('notworked');
@@ -311,8 +431,9 @@ class Awards extends CI_Controller {
 			$postdata['mode'] = $this->input->post('mode');
         }
         else { // Setting default values at first load of page
-            $postdata['lotw'] = 1;
             $postdata['qsl'] = 1;
+            $postdata['lotw'] = 1;
+            $postdata['eqsl'] = 0;
             $postdata['worked'] = 1;
             $postdata['confirmed'] = 1;
             $postdata['notworked'] = 1;
@@ -321,7 +442,7 @@ class Awards extends CI_Controller {
         }
 
         $data['was_array'] = $this->was->get_was_array($bands, $postdata);
-        $data['was_summary'] = $this->was->get_was_summary($data['worked_bands']);
+        $data['was_summary'] = $this->was->get_was_summary($bands, $postdata);
 
         // Render Page
         $data['page_title'] = "Awards - WAS (Worked All States)";
@@ -333,8 +454,9 @@ class Awards extends CI_Controller {
     public function iota ()	{
         $this->load->model('iota');
 		$this->load->model('modes');
+        $this->load->model('bands');
 
-        $data['worked_bands'] = $this->iota->get_worked_bands(); // Used in the view for band select
+        $data['worked_bands'] = $this->bands->get_worked_bands('iota'); // Used in the view for band select
 
         if ($this->input->post('band') != NULL) {   // Band is not set when page first loads.
             if ($this->input->post('band') == 'All') {         // Did the user specify a band? If not, use all bands
@@ -370,7 +492,7 @@ class Awards extends CI_Controller {
             $postdata['worked'] = 1;
             $postdata['confirmed'] = 1;
             $postdata['notworked'] = 1;
-            $postdata['includedeleted'] = 1;
+            $postdata['includedeleted'] = 0;
             $postdata['Africa'] = 1;
             $postdata['Asia'] = 1;
             $postdata['Europe'] = 1;
@@ -384,7 +506,7 @@ class Awards extends CI_Controller {
 
         $iotalist = $this->iota->fetchIota($postdata);
         $data['iota_array'] = $this->iota->get_iota_array($iotalist, $bands, $postdata);
-        $data['iota_summary'] = $this->iota->get_iota_summary($bands);
+        $data['iota_summary'] = $this->iota->get_iota_summary($bands, $postdata);
 
         // Render Page
         $data['page_title'] = "Awards - IOTA (Islands On The Air)";
@@ -475,7 +597,7 @@ class Awards extends CI_Controller {
 		ini_set('memory_limit', '-1');
 
 		$this->load->model('adif_data');
-		//$type = str_replace('"', "", $this->input->get("type"));
+
 		$type = $this->uri->segment(3);
 		$data['qsos'] = $this->adif_data->sig_all($type);
 
@@ -495,8 +617,9 @@ class Awards extends CI_Controller {
 
         $bands[] = $band_type;
 
-        $postdata['lotw'] = 1;
         $postdata['qsl'] = 1;
+        $postdata['lotw'] = 1;
+        $postdata['eqsl'] = 0;
         $postdata['worked'] = 1;
         $postdata['confirmed'] = 1;
         $postdata['notworked'] = 1;
@@ -508,5 +631,173 @@ class Awards extends CI_Controller {
         $data['page_title'] = "";
 
         $this->load->view('awards/was/map', $data);
+    }
+
+    /*
+        function cq_map
+        This displays the CQ Zone map and requires the $band_type and $mode_type
+    */
+    public function cq_map() {
+        $CI =& get_instance();
+		$CI->load->model('logbooks_model');
+		$logbooks_locations_array = $CI->logbooks_model->list_logbook_relationships($this->session->userdata('active_station_logbook'));
+
+        $this->load->model('cq');
+
+        $bands[] = $this->input->post('band');
+
+        $postdata['qsl'] = $this->input->post('qsl') == 0 ? NULL: 1;
+        $postdata['lotw'] = $this->input->post('lotw') == 0 ? NULL: 1;
+        $postdata['eqsl'] = $this->input->post('eqsl') == 0 ? NULL: 1;
+        $postdata['worked'] = $this->input->post('worked') == 0 ? NULL: 1;
+        $postdata['confirmed'] = $this->input->post('confirmed')  == 0 ? NULL: 1;
+        $postdata['notworked'] = $this->input->post('notworked')  == 0 ? NULL: 1;
+        $postdata['band'] = $this->input->post('band');
+		$postdata['mode'] = $this->input->post('mode');
+
+        if ($logbooks_locations_array) {
+			$location_list = "'".implode("','",$logbooks_locations_array)."'";
+            $cq_array = $this->cq->get_cq_array($bands, $postdata, $location_list);
+		} else {
+            $location_list = null;
+            $cq_array = null;
+        }
+
+        foreach ($cq_array as $cq => $value) {
+            foreach ($value  as $key) {
+                if($key != "") {
+                    if (strpos($key, '>W<') !== false) {
+                        $zones[] = 'W';
+                        break;
+                    }
+                    if (strpos($key, '>C<') !== false) {
+                        $zones[] = 'C';
+                        break;
+                    }
+                    if (strpos($key, '-') !== false) {
+                        $zones[] = '-';
+                        break;
+                    }
+                }
+            }
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($zones);
+    }
+    
+    /*
+        function dxcc_map
+        This displays the DXCC map
+    */
+    public function dxcc_map() {
+        $this->load->model('dxcc');
+        $this->load->model('bands');
+
+        $bands[] = $this->input->post('band');
+
+        $postdata['qsl'] = $this->input->post('qsl') == 0 ? NULL: 1;
+        $postdata['lotw'] = $this->input->post('lotw') == 0 ? NULL: 1;
+        $postdata['eqsl'] = $this->input->post('eqsl') == 0 ? NULL: 1;
+        $postdata['worked'] = $this->input->post('worked') == 0 ? NULL: 1;
+        $postdata['confirmed'] = $this->input->post('confirmed')  == 0 ? NULL: 1;
+        $postdata['notworked'] = $this->input->post('notworked')  == 0 ? NULL: 1;
+        $postdata['band'] = $this->input->post('band');
+		    $postdata['mode'] = $this->input->post('mode');
+        $postdata['includedeleted'] = $this->input->post('includedeleted') == 0 ? NULL: 1;
+        $postdata['Africa'] = $this->input->post('Africa') == 0 ? NULL: 1;
+        $postdata['Asia'] = $this->input->post('Asia') == 0 ? NULL: 1;
+        $postdata['Europe'] = $this->input->post('Europe') == 0 ? NULL: 1;
+        $postdata['NorthAmerica'] = $this->input->post('NorthAmerica') == 0 ? NULL: 1;
+        $postdata['SouthAmerica'] = $this->input->post('SouthAmerica') == 0 ? NULL: 1;
+        $postdata['Oceania'] = $this->input->post('Oceania') == 0 ? NULL: 1;
+        $postdata['Antarctica'] = $this->input->post('Antarctica') == 0 ? NULL: 1;
+
+        $dxcclist = $this->dxcc->fetchdxcc($postdata);
+
+        $dxcc_array = $this->dxcc->get_dxcc_array($dxcclist, $bands, $postdata);
+
+        $i = 0;
+
+        foreach ($dxcclist as $dxcc) {
+            $newdxcc[$i]['adif'] = $dxcc->adif;
+            $newdxcc[$i]['prefix'] = $dxcc->prefix;
+            $newdxcc[$i]['name'] = ucwords(strtolower($dxcc->name), "- (/");
+            if ($dxcc->Enddate!=null) {
+                $newdxcc[$i]['name'] .= ' (deleted)';
+            }
+            $newdxcc[$i]['lat'] = $dxcc->lat;
+            $newdxcc[$i]['long'] = $dxcc->long;
+            $newdxcc[$i++]['status'] = isset($dxcc_array[$dxcc->adif]) ? $this->returnStatus($dxcc_array[$dxcc->adif]) : 'x';
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($newdxcc);
+    }
+
+    /*
+        function iota
+        This displays the IOTA map
+    */
+    public function iota_map() {
+        $this->load->model('iota');
+        $this->load->model('bands');
+
+        $bands[] = $this->input->post('band');
+
+        $postdata['lotw'] = $this->input->post('lotw') == 0 ? NULL: 1;
+        $postdata['qsl'] = $this->input->post('qsl') == 0 ? NULL: 1;
+        $postdata['worked'] = $this->input->post('worked') == 0 ? NULL: 1;
+        $postdata['confirmed'] = $this->input->post('confirmed')  == 0 ? NULL: 1;
+        $postdata['notworked'] = $this->input->post('notworked')  == 0 ? NULL: 1;
+        $postdata['band'] = $this->input->post('band');
+		    $postdata['mode'] = $this->input->post('mode');
+        $postdata['includedeleted'] = $this->input->post('includedeleted') == 0 ? NULL: 1;
+        $postdata['Africa'] = $this->input->post('Africa') == 0 ? NULL: 1;
+        $postdata['Asia'] = $this->input->post('Asia') == 0 ? NULL: 1;
+        $postdata['Europe'] = $this->input->post('Europe') == 0 ? NULL: 1;
+        $postdata['NorthAmerica'] = $this->input->post('NorthAmerica') == 0 ? NULL: 1;
+        $postdata['SouthAmerica'] = $this->input->post('SouthAmerica') == 0 ? NULL: 1;
+        $postdata['Oceania'] = $this->input->post('Oceania') == 0 ? NULL: 1;
+        $postdata['Antarctica'] = $this->input->post('Antarctica') == 0 ? NULL: 1;
+
+        $iotalist = $this->iota->fetchIota($postdata);
+
+        $iota_array = $this->iota->get_iota_array($iotalist, $bands, $postdata);
+
+        $i = 0;
+
+        foreach ($iotalist as $iota) {
+            $newiota[$i]['tag'] = $iota->tag;
+            $newiota[$i]['prefix'] = $iota->prefix;
+            $newiota[$i]['name'] = ucwords(strtolower($iota->name), "- (/");
+            if ($iota->status == 'D') {
+                $newiota[$i]['name'] .= ' (deleted)';
+            }
+            $newiota[$i]['lat1'] = $iota->lat1;
+            $newiota[$i]['lon1'] = $iota->lon1;
+            $newiota[$i]['lat2'] = $iota->lat2;
+            $newiota[$i]['lon2'] = $iota->lon2;
+            $newiota[$i++]['status'] = isset($iota_array[$iota->tag]) ? $this->returnStatus($iota_array[$iota->tag]) : 'x';
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($newiota);
+    }
+
+    function returnStatus($string) {
+        foreach ($string  as $key) {
+            if($key != "") {
+                if (strpos($key, '>W<') !== false) {
+                    return 'W';
+                }
+                if (strpos($key, '>C<') !== false) {
+                    return 'C';
+                }
+                if ($key == '-') {
+                    return '-';
+                }
+            }
+        }
     }
 }

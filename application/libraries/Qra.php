@@ -55,11 +55,68 @@ class Qra {
 		$stn = qra2latlong($rx);
 
 		// Feed in Lat Longs plus the unit type
-		$total_distance = distance($my[0], $my[1], $stn[0], $stn[1], $unit);
+		try
+		{
+			$total_distance = distance($my[0], $my[1], $stn[0], $stn[1], $unit);
+		}
+		catch (Exception $e)
+		{
+			$total_distance = 0;
+		}
 
 		// Return the distance
 		return $total_distance;
 	}
+
+	/*
+	* Function returns just the bearing
+	*  Input locator1 and locator2
+	*/
+	function get_bearing($tx, $rx) {
+		$my = qra2latlong($tx);
+		$stn = qra2latlong($rx);
+		return get_bearing($my[0], $my[1], $stn[0], $stn[1]);
+	}
+
+	/*
+	Find the Midpoint between two gridsquares using lat / long
+
+	Needs following passed
+
+	$coords[]=array('lat' => '53.344104','lng'=>'-6.2674937');
+	$coords[]=array('lat' => '51.5081289','lng'=>'-0.128005');    
+
+*/
+
+function get_midpoint($coords)
+{
+    $count_coords = count($coords);
+    $xcos=0.0;
+    $ycos=0.0;
+    $zsin=0.0;
+    
+        foreach ($coords as $lnglat)
+        {
+            $lat = $lnglat['lat'] * pi() / 180;
+            $lon = $lnglat['lng'] * pi() / 180;
+            
+            $acos = cos($lat) * cos($lon);
+            $bcos = cos($lat) * sin($lon);
+            $csin = sin($lat);
+            $xcos += $acos;
+            $ycos += $bcos;
+            $zsin += $csin;
+        }
+    
+    $xcos /= $count_coords;
+    $ycos /= $count_coords;
+    $zsin /= $count_coords;
+    $lon = atan2($ycos, $xcos);
+    $sqrt = sqrt($xcos * $xcos + $ycos * $ycos);
+    $lat = atan2($zsin, $sqrt);
+    
+    return array($lat * 180 / pi(), $lon * 180 / pi());
+}
 }
 
 function distance($lat1, $lon1, $lat2, $lon2, $unit = 'M') {
@@ -115,10 +172,16 @@ function bearing($lat1, $lon1, $lat2, $lon2, $unit = 'M') {
 }
 
 function get_bearing($lat1, $lon1, $lat2, $lon2) {
-	return (rad2deg(atan2(sin(deg2rad($lon2) - deg2rad($lon1)) * cos(deg2rad($lat2)), cos(deg2rad($lat1)) * sin(deg2rad($lat2)) - sin(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($lon2) - deg2rad($lon1)))) + 360) % 360;
+	return (int)(rad2deg(atan2(sin(deg2rad($lon2) - deg2rad($lon1)) * cos(deg2rad($lat2)), cos(deg2rad($lat1)) * sin(deg2rad($lat2)) - sin(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($lon2) - deg2rad($lon1)))) + 360) % 360;
 }
 
 function qra2latlong($strQRA) {
+
+	if (strpos($strQRA, ',') !== false) {
+        $gridsquareArray = explode(',', $strQRA);
+        $strQRA = $gridsquareArray[0];
+    }
+
 	if (strlen($strQRA) %2 == 0) {
 		$strQRA = strtoupper($strQRA);
 		if (strlen($strQRA) == 4)  $strQRA .= "MM";
@@ -142,4 +205,6 @@ function qra2latlong($strQRA) {
 		return array(0, 0);
 	}
 }
+
+
 /* End of file Qra.php */

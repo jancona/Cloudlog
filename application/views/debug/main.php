@@ -6,6 +6,26 @@
     <div class="col">
 
         <div class="card">
+            <div class="card-header">Cloudlog Information</div>
+            <div class="card-body">
+                <table width="100%">
+                    <tr>
+                        <td>Version</td>
+                        <td><?php echo $this->config->item('app_version')."\n"; ?></td>
+                    </tr>
+                    <tr>
+                        <td>Language</td>
+                        <td><?php echo ucfirst($this->config->item('language'))."\n"; ?></td>
+                    </tr>
+                    <tr>
+                        <td>Base URL</td>
+                        <td><span id="baseUrl"><a href="<?php echo $this->config->item('base_url')?>" target="_blank"><?php echo $this->config->item('base_url'); ?></a></span> <span data-toggle="tooltip" data-original-title="<?php echo lang('copy_to_clipboard'); ?>" onclick='copyURL("<?php echo $this->config->item('base_url'); ?>")'><i class="copy-icon fas fa-copy"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="card-header">Server Information</div>
             <div class="card-body">
                 <table width="100%">
@@ -23,7 +43,19 @@
         </div>
 
         <div class="card">
-            <div class="card-header">Folder Perimissions</div>
+            <div class="card-header">Codeigniter</div>
+            <div class="card-body">
+                <table width="100%">
+                    <tr>
+                        <td>Version</td>
+                        <td><?php echo CI_VERSION; ?></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Folder Permissions</div>
             <div class="card-body">
                 <p>This checks the folders Cloudlog uses are read and writeable by PHP.</p>
                 <table width="100%">
@@ -126,6 +158,79 @@
                 </table>
             </div>
         </div>
+        <?php if (file_exists('.git')) { ?>
+        <?php
+            $commitHash = trim(exec('git log --pretty="%H" -n1 HEAD'));
+            $branch = '';
+            $remote = '';
+            $owner = '';
+            // only proceed here if git can actually be executed
+            if ($commitHash != "") {
+               $commitDate = trim(exec('git log --pretty="%ci" -n1 HEAD'));
+               $line = trim(exec('git log -n 1 --pretty=%D HEAD'));
+               $pieces = explode(', ', $line);
+               if (isset($pieces[1])) {
+                  $remote = substr($pieces[1], 0, strpos($pieces[1], '/'));
+                  $branch = substr($pieces[1], strpos($pieces[1], '/')+1);
+                  $url = trim(exec('git remote get-url '.$remote));
+                  if (strpos($url, 'https://github.com') !== false) {
+                     $owner = preg_replace('/https:\/\/github\.com\/(\w+)\/Cloudlog\.git/', '$1', $url);
+                  } else if (strpos($url, 'git@github.com') !== false) {
+                     $owner = preg_replace('/git@github\.com:(\w+)\/Cloudlog\.git/', '$1', $url);
+                  }
+               }
+               $tag = trim(exec('git describe --tags '.$commitHash));
+            }
+        ?>
+
+        <?php if($commitHash != "") { ?>
+        <div class="card">
+            <div class="card-header">Git Information</div>
+            <div class="card-body">
+                <table width="100%">
+                    <tr>
+                        <td>Branch</td>
+                        <td>
+                            <?php if($branch != "") { ?>
+                                <?php if($owner != "") { ?>
+                                    <a target="_blank" href="https://github.com/<?php echo $owner; ?>/Cloudlog/tree/<?php echo $branch?>">
+                                <?php } ?>
+                                    <span class="badge badge-success"><?php echo $branch; ?></span>
+                                <?php if($owner != "") { ?>
+                                    </a>
+                                <?php } ?>
+                            <?php } else { ?> 
+                                <span class="badge badge-danger">n/a</span>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                    <tr>
+                    <tr>
+                        <td>Commit</td>
+                        <td>
+                            <?php if($commitHash != "") { ?>
+                                <a target="_blank" href="https://github.com/magicbug/Cloudlog/commit/<?php echo $commitHash?>"><span class="badge badge-success"><?php echo substr($commitHash,0,8); ?></span></a>
+                            <?php } else { ?> 
+                                <span class="badge badge-danger">n/a</span>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Tag</td>
+                        <td>
+                            <?php if($commitHash != "") { ?>
+                                <a target="_blank" href="https://github.com/magicbug/Cloudlog/releases/tag/<?php echo substr($tag,0,strpos($tag, '-')); ?>"><span class="badge badge-success"><?php echo $tag; ?></span></a>
+                            <?php } else { ?> 
+                                <span class="badge badge-danger">n/a</span>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                </table>
+                </table>
+            </div>
+        </div>
+        <?php } ?>
+        <?php } ?>
     </div>
 </div>
 

@@ -7,7 +7,6 @@ class API extends CI_Controller {
 	{
 	}
 
-
 	/*
 		TODOs
 		- Search Callsign (Return Json)
@@ -43,8 +42,13 @@ class API extends CI_Controller {
 	function help()
 	{
 		$this->load->model('user_model');
-		if(!$this->user_model->authorize(99)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
 
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 
 		$this->load->model('api_model');
 
@@ -61,7 +65,12 @@ class API extends CI_Controller {
 	function edit($key) {
 		$this->load->model('user_model');
 
-		if(!$this->user_model->authorize(99)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 
 		$this->load->model('api_model');
 
@@ -97,7 +106,13 @@ class API extends CI_Controller {
 
 	function generate($rights) {
 		$this->load->model('user_model');
-		if(!$this->user_model->authorize(99)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
+
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 
 
 		$this->load->model('api_model');
@@ -109,7 +124,13 @@ class API extends CI_Controller {
 
 	function delete($key) {
 		$this->load->model('user_model');
-		if(!$this->user_model->authorize(99)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
+
+		// Check if users logged in
+
+		if($this->user_model->validate_session() == 0) {
+			// user is not logged in
+			redirect('user/login');
+		}
 
 
 		$this->load->model('api_model');
@@ -200,6 +221,8 @@ class API extends CI_Controller {
             $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard');
         }
 
+		$this->api_model->update_last_used($obj['key']);
+
 		// Retrieve the arguments from the query string
         $data['data']['format'] = $arguments['format'];
 
@@ -273,6 +296,8 @@ class API extends CI_Controller {
 		if((!$this->user_model->authorize(3)) && ($this->api_model->authorize($arguments['key']) == 0)) {
             $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard');
         }
+
+		$this->api_model->update_last_used($obj['key']);
 
 		// Retrieve the arguments from the query string
         $data['data']['format'] = $arguments['format'];
@@ -398,6 +423,8 @@ class API extends CI_Controller {
 
 		$this->load->model('api_model');
 
+		$this->load->model('stations');
+
 		// Decode JSON and store
 		$obj = json_decode(file_get_contents("php://input"), true);
 		if ($obj === NULL) {
@@ -411,6 +438,15 @@ class API extends CI_Controller {
 		   die();
 		}
 
+		$userid = $this->api_model->key_userid($obj['key']);
+
+		if(!isset($obj['station_profile_id']) || $this->stations->check_station_against_user($obj['station_profile_id'], $userid) == false) {
+			http_response_code(401);
+			echo json_encode(['status' => 'failed', 'reason' => "station id does not belong to the API key owner."]);
+			die();
+		}
+
+		$this->api_model->update_last_used($obj['key']);
 
 		if($obj['type'] == "adif" && $obj['string'] != "") {
 			// Load the logbook model for adding QSO records
@@ -432,14 +468,160 @@ class API extends CI_Controller {
 
 
 				if(isset($obj['station_profile_id'])) {
-					$this->logbook_model->import($record, $obj['station_profile_id'], NULL, NULL, NULL, NULL, false, false);
+					$this->logbook_model->import($record, $obj['station_profile_id'], NULL, NULL, NULL, NULL, false, false, true);
 				} else {
-					$this->logbook_model->import($record, 0, NULL, NULL, NULL, NULL, false, false);
+					$this->logbook_model->import($record, 0, NULL, NULL, NULL, NULL, false, false, true);
 				}
 
 			};
 			http_response_code(201);
 			echo json_encode(['status' => 'created', 'type' => $obj['type'], 'string' => $obj['string']]);
+
+		}
+
+	}
+
+	// API function to check if a callsign is in the logbook already
+	function logbook_check_callsign() {
+		header('Content-type: application/json');
+
+		$this->load->model('api_model');
+
+		// Decode JSON and store
+		$obj = json_decode(file_get_contents("php://input"), true);
+		if ($obj === NULL) {
+		    echo json_encode(['status' => 'failed', 'reason' => "wrong JSON"]);
+		}
+
+		if(!isset($obj['key']) || $this->api_model->authorize($obj['key']) == 0) {
+		   http_response_code(401);
+		   echo json_encode(['status' => 'failed', 'reason' => "missing api key"]);
+		}
+
+		if($obj['logbook_public_slug'] != "" && $obj['callsign'] != "") {
+
+			$logbook_slug = $obj['logbook_public_slug'];
+			$callsign = $obj['callsign'];
+
+			// If $obj['band'] exists
+			if(isset($obj['band'])) {
+				$band = $obj['band'];
+			} else {
+				$band = null;
+			}
+
+			$this->load->model('logbooks_model');
+
+			if($this->logbooks_model->public_slug_exists($logbook_slug)) {
+				$logbook_id = $this->logbooks_model->public_slug_exists_logbook_id($logbook_slug);
+				if($logbook_id != false)
+				{
+					// Get associated station locations for mysql queries
+					$logbooks_locations_array = $this->logbooks_model->list_logbook_relationships($logbook_id);
+	
+					if (!$logbooks_locations_array) {
+						// Logbook not found
+						http_response_code(404);
+						echo json_encode(['status' => 'failed', 'reason' => "Empty Logbook"]);
+						die();
+					}
+				} else {
+					// Logbook not found
+					http_response_code(404);
+					echo json_encode(['status' => 'failed', 'reason' => $logbook_slug." has no associated station locations"]);
+					die();
+				}
+				// Search Logbook for callsign
+				$this->load->model('logbook_model');
+
+				$result = $this->logbook_model->check_if_callsign_worked_in_logbook($callsign, $logbooks_locations_array, $band);
+
+				http_response_code(201);
+				if($result > 0)
+				{
+					echo json_encode(['callsign' => $callsign, 'result' => 'Found']);
+				} else {
+					echo json_encode(['callsign' => $callsign, 'result' => 'Not Found']);
+				}
+			} else {
+				// Logbook not found
+				http_response_code(404);
+				echo json_encode(['status' => 'failed', 'reason' => "logbook not found"]);
+				die();
+			}
+
+		}
+
+	}
+
+	// API function to check if a grid is in the logbook already
+	function logbook_check_grid() {
+		header('Content-type: application/json');
+
+		$this->load->model('api_model');
+
+		// Decode JSON and store
+		$obj = json_decode(file_get_contents("php://input"), true);
+		if ($obj === NULL) {
+		    echo json_encode(['status' => 'failed', 'reason' => "wrong JSON"]);
+		}
+
+		if(!isset($obj['key']) || $this->api_model->authorize($obj['key']) == 0) {
+		   http_response_code(401);
+		   echo json_encode(['status' => 'failed', 'reason' => "missing api key"]);
+		}
+
+		if($obj['logbook_public_slug'] != "" && $obj['grid'] != "") {
+
+			$logbook_slug = $obj['logbook_public_slug'];
+			$grid = $obj['grid'];
+
+			// If $obj['band'] exists
+			if(isset($obj['band'])) {
+				$band = $obj['band'];
+			} else {
+				$band = null;
+			}
+
+			$this->load->model('logbooks_model');
+
+			if($this->logbooks_model->public_slug_exists($logbook_slug)) {
+				$logbook_id = $this->logbooks_model->public_slug_exists_logbook_id($logbook_slug);
+				if($logbook_id != false)
+				{
+					// Get associated station locations for mysql queries
+					$logbooks_locations_array = $this->logbooks_model->list_logbook_relationships($logbook_id);
+	
+					if (!$logbooks_locations_array) {
+						// Logbook not found
+						http_response_code(404);
+						echo json_encode(['status' => 'failed', 'reason' => "Empty Logbook"]);
+						die();
+					}
+				} else {
+					// Logbook not found
+					http_response_code(404);
+					echo json_encode(['status' => 'failed', 'reason' => $logbook_slug." has no associated station locations"]);
+					die();
+				}
+				// Search Logbook for callsign
+				$this->load->model('logbook_model');
+
+				$result = $this->logbook_model->check_if_grid_worked_in_logbook($grid, $logbooks_locations_array, $band);
+
+				http_response_code(201);
+				if($result > 0)
+				{
+					echo json_encode(['gridsquare' => strtoupper($grid), 'result' => 'Found']);
+				} else {
+					echo json_encode(['gridsquare' => strtoupper($grid), 'result' => 'Not Found']);
+				}
+			} else {
+				// Logbook not found
+				http_response_code(404);
+				echo json_encode(['status' => 'failed', 'reason' => "logbook not found"]);
+				die();
+			}
 
 		}
 
@@ -479,8 +661,12 @@ class API extends CI_Controller {
 		   die();
 		}
 
+		$this->api_model->update_last_used($obj['key']);
+
+		$user_id = $this->api_model->key_userid($obj['key']);
+
 		// Store Result to Database
-		$this->cat->update($obj);
+		$this->cat->update($obj, $user_id);
 
 		// Return Message
 
@@ -496,14 +682,14 @@ class API extends CI_Controller {
 	*
 	*/
 
-	function statistics() {
+	function statistics($key = null) {
 		header('Content-type: application/json');
 		$this->load->model('logbook_model');
 
-		$data['todays_qsos'] = $this->logbook_model->todays_qsos();
-		$data['total_qsos'] = $this->logbook_model->total_qsos();
-		$data['month_qsos'] = $this->logbook_model->month_qsos();
-		$data['year_qsos'] = $this->logbook_model->year_qsos();
+		$data['todays_qsos'] = $this->logbook_model->todays_qsos(null, $key);
+		$data['total_qsos'] = $this->logbook_model->total_qsos(null, $key);
+		$data['month_qsos'] = $this->logbook_model->month_qsos(null, $key);
+		$data['year_qsos'] = $this->logbook_model->year_qsos(null, $key);
 
 		http_response_code(201);
 		echo json_encode(['Today' => $data['todays_qsos'], 'total_qsos' => $data['total_qsos'], 'month_qsos' => $data['month_qsos'], 'year_qsos' => $data['year_qsos']]);
