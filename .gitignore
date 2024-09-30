@@ -16,3 +16,6 @@
 sync.sh
 *.p12
 *.swp
+
+/backup/notes_*.xml
+/backup/logbook*.adi
